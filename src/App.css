@@ -1,5 +1,19 @@
 .App {
   text-align: center;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+section {
+  background-color: #282c34;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
 }
 
 .App-logo {
@@ -13,15 +27,7 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.StartGame {
 }
 
 .App-link {
@@ -35,4 +41,7 @@
   to {
     transform: rotate(360deg);
   }
+}
+footer {
+  margin-top: auto;
 }
