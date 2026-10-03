@@ -1,53 +1,66 @@
-import { useState } from "react";
-import "./App.css";
-import { StartGame } from "./Pages/StartGame";
-import { steps } from "./helpers/steps";
-import { Difficulty } from "./Pages/Difficulty";
-function App() {
-  const [step, setStep] = useState(1);
+import { useEffect, useRef } from "react";
+import "./index.css";
+import { useHatGame } from "./game/useHatGame";
+import { HomeScreen } from "./screens/HomeScreen";
+import { RulesScreen } from "./screens/RulesScreen";
+import { SetupScreen } from "./screens/SetupScreen";
+import { CoverScreen, WriteScreen } from "./screens/EntryScreens";
+import { ReadyScreen } from "./screens/ReadyScreen";
+import { PlayScreen } from "./screens/PlayScreen";
+import { BuzzerScreen } from "./screens/BuzzerScreen";
+import { TurnSummaryScreen } from "./screens/TurnSummaryScreen";
+import { RoundSummaryScreen } from "./screens/RoundSummaryScreen";
+import { FinalScreen } from "./screens/FinalScreen";
 
-  const nextStep = () => {
-    setStep(step + 1);
-  };
+function AbortDialog({ game }) {
+  const stayRef = useRef(null);
+  const dismissRef = useRef(game.dismissAbort);
+  dismissRef.current = game.dismissAbort;
+  useEffect(() => {
+    stayRef.current?.focus();
+    const onKey = (event) => {
+      if (event.key === "Escape") dismissRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
-  const prevStep = () => {
-    if (step === steps.main) {
-      return;
-    }
-    setStep(step - 1);
-  };
-
-  console.log(step);
+  const copy = game.entry
+    ? "Прервать запись слов? Уже написанное пропадёт."
+    : "Закончить партию? Текущий счёт пропадёт.";
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button onClick={prevStep}>назад</button>
-      </header>
-      <section>
-        {step === steps.main && <StartGame />}
-        {step === steps.difficulty && <Difficulty />}
-      </section>
-      <footer>
-        <button onClick={nextStep}>Следующий шаг</button>
-      </footer>
+    <div className="modal-back">
+      <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="abort-title">
+        <h2 id="abort-title">Точно остановить?</h2>
+        <p className="hint">{copy}</p>
+        <button ref={stayRef} type="button" className="btn btn-hat" onClick={game.dismissAbort}>
+          Остаться
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={game.abort}>
+          Остановить
+        </button>
+      </div>
     </div>
   );
 }
 
-export default App;
-
-{
-  /* <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a> */
+export default function App() {
+  const game = useHatGame();
+  return (
+    <div className="app">
+      {game.view === "home" && <HomeScreen game={game} />}
+      {game.view === "rules" && <RulesScreen game={game} />}
+      {game.view === "setup" && <SetupScreen game={game} />}
+      {game.view === "cover" && <CoverScreen game={game} />}
+      {game.view === "write" && <WriteScreen key={game.entry.index} game={game} />}
+      {game.view === "ready" && <ReadyScreen game={game} />}
+      {game.view === "play" && <PlayScreen game={game} />}
+      {game.view === "buzzer" && <BuzzerScreen game={game} />}
+      {game.view === "turnSummary" && <TurnSummaryScreen game={game} />}
+      {game.view === "roundSummary" && <RoundSummaryScreen game={game} />}
+      {game.view === "finished" && <FinalScreen game={game} />}
+      {game.askAbort ? <AbortDialog game={game} /> : null}
+    </div>
+  );
 }
