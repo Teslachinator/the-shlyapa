@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  awardRoundWord,
+  awardTurnWord,
   beginTurn as openTurn,
   confirmTurn as closeTurn,
   continueAfterRound,
   createMatch,
+  finishMatch,
   guessWord,
   passWord,
+  releaseRoundWord,
   resolveBuzzer as closeBuzzer,
   revokeTurnWord,
   timeUp,
@@ -15,6 +19,7 @@ import {
   playHorn,
   playPass,
   playPop,
+  playSignal,
   playTick,
   pulse,
   unlockAudio,
@@ -362,8 +367,43 @@ export function useHatGame() {
     setMatch((current) => (current ? closeBuzzer(current, guessed) : current));
   }
 
+  function signal(up) {
+    if (!soundRef.current) return;
+    playSignal(up);
+    pulse(12);
+  }
+
   function revoke(word) {
-    setMatch((current) => (current ? revokeTurnWord(current, word) : current));
+    const current = matchRef.current;
+    if (!current?.turnGuessed.includes(word)) return;
+    signal(false);
+    setMatch((latest) => (latest ? revokeTurnWord(latest, word) : latest));
+  }
+
+  function award(word) {
+    const current = matchRef.current;
+    if (!current || current.turnGuessed.includes(word)) return;
+    if (!current.hat.includes(word) && !current.passed.includes(word)) return;
+    signal(true);
+    setMatch((latest) => (latest ? awardTurnWord(latest, word) : latest));
+  }
+
+  function releaseWord(word) {
+    const current = matchRef.current;
+    if (current?.phase !== "roundSummary") return;
+    const owned = current.teams.some((team) =>
+      (team.scores[current.roundIndex] || []).includes(word)
+    );
+    if (!owned || current.hat.includes(word)) return;
+    signal(false);
+    setMatch((latest) => (latest ? releaseRoundWord(latest, word) : latest));
+  }
+
+  function awardWord(word, teamId) {
+    const current = matchRef.current;
+    if (current?.phase !== "roundSummary" || !current.hat.includes(word)) return;
+    signal(true);
+    setMatch((latest) => (latest ? awardRoundWord(latest, word, teamId) : latest));
   }
 
   function confirmTurn() {
@@ -372,6 +412,10 @@ export function useHatGame() {
 
   function nextRound() {
     setMatch((current) => (current ? continueAfterRound(current) : current));
+  }
+
+  function showFinal() {
+    setMatch((current) => (current ? finishMatch(current) : current));
   }
 
   function requestAbort() {
@@ -433,8 +477,12 @@ export function useHatGame() {
     pass,
     resolveBuzzer,
     revoke,
+    award,
+    releaseWord,
+    awardWord,
     confirmTurn,
     nextRound,
+    showFinal,
     requestAbort,
     dismissAbort,
     abort,

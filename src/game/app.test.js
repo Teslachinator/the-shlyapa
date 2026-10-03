@@ -65,7 +65,7 @@ describe("партия на экране", () => {
       fireEvent.click(screen.getByRole("button", { name: "Угадали" }));
     }
     expect(screen.getByRole("heading", { name: "+8" })).toBeTruthy();
-    fireEvent.click(screen.getAllByRole("button", { name: "В шляпу" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { pressed: true })[0]);
     expect(screen.getByRole("heading", { name: "+7" })).toBeTruthy();
 
     const finish = (stop) => {

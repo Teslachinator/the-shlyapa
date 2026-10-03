@@ -8,6 +8,10 @@ import {
   guessWord,
   noWordsLeft,
   passWord,
+  awardRoundWord,
+  awardTurnWord,
+  finishMatch,
+  releaseRoundWord,
   resolveBuzzer,
   revokeTurnWord,
   teamTotal,
@@ -96,10 +100,45 @@ describe("шляпа", () => {
     expect(countPieces(state)).toBe(1);
   });
 
+  test("пропущенное слово можно засчитать до конца хода", () => {
+    let state = beginTurn(party(["арбуз", "банан"]));
+    state = guessWord(state);
+    state = timeUp(state);
+    state = resolveBuzzer(state, false);
+    expect(state.phase).toBe("turnSummary");
+    expect(state.hat).toEqual(["арбуз"]);
+    state = awardTurnWord(state, "арбуз");
+    expect(state.turnGuessed).toEqual(["банан", "арбуз"]);
+    expect(state.hat).toEqual([]);
+    expect(countPieces(state)).toBe(2);
+    state = confirmTurn(state);
+    expect(state.phase).toBe("roundSummary");
+    expect(teamTotal(state.teams[0])).toBe(2);
+  });
+
+  test("после раунда слово можно снять и засчитать другой команде", () => {
+    let state = beginTurn(party(["арбуз", "банан"], ["explain"]));
+    while (state.phase === "play") state = guessWord(state);
+    state = confirmTurn(state);
+    expect(state.phase).toBe("roundSummary");
+    state = releaseRoundWord(state, "арбуз");
+    expect(state.hat).toEqual(["арбуз"]);
+    expect(state.teams[0].scores[0]).toEqual(["банан"]);
+    expect(countPieces(state)).toBe(2);
+    state = awardRoundWord(state, "арбуз", "b");
+    expect(state.hat).toEqual([]);
+    expect(state.teams[1].scores[0]).toEqual(["арбуз"]);
+    expect(teamTotal(state.teams[0]) + teamTotal(state.teams[1])).toBe(2);
+    state = finishMatch(state);
+    expect(state.phase).toBe("finished");
+  });
+
   test("последний раунд заканчивает партию", () => {
     let state = beginTurn(party(["кепка"], ["mime"]));
     state = guessWord(state);
     state = confirmTurn(state);
+    expect(state.phase).toBe("roundSummary");
+    state = finishMatch(state);
     expect(state.phase).toBe("finished");
   });
 

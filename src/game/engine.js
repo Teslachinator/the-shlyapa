@@ -162,6 +162,12 @@ export function resolveBuzzer(state, guessed) {
   };
 }
 
+function removeOnce(list, word) {
+  const index = list.indexOf(word);
+  if (index < 0) return list;
+  return list.filter((_, item) => item !== index);
+}
+
 export function revokeTurnWord(state, word) {
   if (state.phase !== "turnSummary") return state;
   const index = state.turnGuessed.indexOf(word);
@@ -170,6 +176,19 @@ export function revokeTurnWord(state, word) {
     ...state,
     turnGuessed: state.turnGuessed.filter((_, item) => item !== index),
     hat: [...state.hat, word],
+  };
+}
+
+export function awardTurnWord(state, word) {
+  if (state.phase !== "turnSummary" || state.turnGuessed.includes(word)) return state;
+  const inHat = state.hat.includes(word);
+  const inPassed = state.passed.includes(word);
+  if (!inHat && !inPassed) return state;
+  return {
+    ...state,
+    hat: inHat ? removeOnce(state.hat, word) : state.hat,
+    passed: inHat ? state.passed : removeOnce(state.passed, word),
+    turnGuessed: [...state.turnGuessed, word],
   };
 }
 
@@ -197,11 +216,11 @@ export function confirmTurn(state) {
     turnTeamIndex: (state.turnTeamIndex + 1) % teams.length,
   };
   if (remaining.length === 0) {
-    const lastRound = state.roundIndex >= state.rounds.length - 1;
     return {
       ...shared,
       hat: [],
-      phase: lastRound ? "finished" : "roundSummary",
+      held: {},
+      phase: "roundSummary",
     };
   }
   return {
@@ -211,8 +230,55 @@ export function confirmTurn(state) {
   };
 }
 
+function roundScores(team, roundIndex, list) {
+  return {
+    ...team,
+    scores: team.scores.map((words, round) => (round === roundIndex ? list(words) : words)),
+  };
+}
+
+export function releaseRoundWord(state, word) {
+  if (state.phase !== "roundSummary") return state;
+  const owner = state.teams.find((team) => (team.scores[state.roundIndex] || []).includes(word));
+  if (!owner || state.hat.includes(word)) return state;
+  return {
+    ...state,
+    hat: [...state.hat, word],
+    held: { ...(state.held || {}), [word]: owner.id },
+    teams: state.teams.map((team) =>
+      roundScores(team, state.roundIndex, (words) => words.filter((item) => item !== word))
+    ),
+  };
+}
+
+export function awardRoundWord(state, word, teamId) {
+  if (state.phase !== "roundSummary" || !state.hat.includes(word)) return state;
+  if (!state.teams.some((team) => team.id === teamId)) return state;
+  const owned = state.teams.some((team) => (team.scores[state.roundIndex] || []).includes(word));
+  if (owned) return state;
+  const held = { ...(state.held || {}) };
+  delete held[word];
+  return {
+    ...state,
+    held,
+    hat: removeOnce(state.hat, word),
+    teams: state.teams.map((team) =>
+      team.id === teamId
+        ? roundScores(team, state.roundIndex, (words) => [...words, word])
+        : team
+    ),
+  };
+}
+
+export function finishMatch(state) {
+  if (state.phase !== "roundSummary") return state;
+  if (state.roundIndex < state.rounds.length - 1) return state;
+  return { ...state, phase: "finished" };
+}
+
 export function continueAfterRound(state) {
   if (state.phase !== "roundSummary") return state;
+  if (state.roundIndex >= state.rounds.length - 1) return state;
   return {
     ...state,
     roundIndex: state.roundIndex + 1,
@@ -221,6 +287,7 @@ export function continueAfterRound(state) {
     turnGuessed: [],
     currentWord: null,
     buzzerWord: null,
+    held: {},
     phase: "ready",
   };
 }

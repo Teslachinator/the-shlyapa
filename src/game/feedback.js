@@ -57,6 +57,16 @@ export function playFanfare() {
   tone(659, 0.16, { gain: 0.05, delay: 0.1 });
 }
 
+export function playSignal(up) {
+  if (up) {
+    tone(520, 0.06, { gain: 0.05 });
+    tone(780, 0.11, { gain: 0.05, delay: 0.07 });
+    return;
+  }
+  tone(780, 0.06, { gain: 0.05 });
+  tone(420, 0.11, { type: "triangle", gain: 0.05, delay: 0.07 });
+}
+
 export function pulse(pattern) {
   try {
     if (navigator.vibrate) navigator.vibrate(pattern);

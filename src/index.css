@@ -770,8 +770,59 @@ input[type="range"] {
   background: rgba(243, 234, 215, 0.08);
 }
 
+button.word-row {
+  width: 100%;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.word-row:active {
+  background: rgba(243, 234, 215, 0.16);
+}
+
 .word-row span {
   overflow-wrap: anywhere;
+}
+
+.word-owner {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.flip {
+  display: flex;
+  flex: 0 0 auto;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(243, 234, 215, 0.1);
+}
+
+.flip span {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 8px 10px;
+  border-radius: 999px;
+}
+
+.flip span.on.score {
+  background: var(--yes);
+  color: var(--paper);
+}
+
+.flip span.on.hat {
+  background: var(--hat);
+  color: var(--paper);
 }
 
 .next-card h2 {
