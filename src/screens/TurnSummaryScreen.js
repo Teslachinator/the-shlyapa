@@ -15,7 +15,7 @@ export function TurnSummaryScreen({ game }) {
   const next = getNextTeam(match);
   const round = roundById(match.rounds[match.roundIndex]);
   const guessed = new Set(match.turnGuessed);
-  const words = [...new Set([...match.turnGuessed, ...match.hat, ...match.passed])].sort(byRussian);
+  const words = [...(match.seen || [])].sort(byRussian);
   const label = ending ? "Завершить раунд" : `Дальше: ${next.name}`;
 
   return (
@@ -35,7 +35,7 @@ export function TurnSummaryScreen({ game }) {
       <p className="kicker">{round.title}</p>
       <h1>+{match.turnGuessed.length}</h1>
       <p className="lede left">
-        {team.name}, объяснял {explainer}. У каждого слова выберите: засчитано или в шляпу.
+        {team.name}, объяснял {explainer}. Здесь только слова, которые были на экране.
       </p>
       <div className="stack">
         {words.map((word) => {
@@ -45,6 +45,7 @@ export function TurnSummaryScreen({ game }) {
               key={word}
               word={word}
               scored={scored}
+              locked={word === match.expired}
               onScore={() => game.award(word)}
               onHat={() => game.revoke(word)}
             />

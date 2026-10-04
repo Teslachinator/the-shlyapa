@@ -46,8 +46,9 @@ export function createMatch({ teams, words, rounds, turnSeconds, random = Math.r
     turnTeamIndex: 0,
     phase: "ready",
     currentWord: null,
-    buzzerWord: null,
     turnGuessed: [],
+    seen: [],
+    expired: null,
     drawId: 0,
     serial: 0,
     turnsPlayed: 0,
@@ -69,12 +70,14 @@ export function teamTotal(team) {
   return team.scores.reduce((sum, round) => sum + round.length, 0);
 }
 
+function noteSeen(seen, word) {
+  const list = seen || [];
+  if (!word || list.includes(word)) return list;
+  return [...list, word];
+}
+
 export function noWordsLeft(match) {
-  return (
-    match.hat.length + match.passed.length === 0 &&
-    !match.currentWord &&
-    !match.buzzerWord
-  );
+  return match.hat.length + match.passed.length === 0 && !match.currentWord;
 }
 
 export function beginTurn(state) {
@@ -88,7 +91,8 @@ export function beginTurn(state) {
     currentWord: drawn.word,
     phase: "play",
     turnGuessed: [],
-    buzzerWord: null,
+    seen: [drawn.word],
+    expired: null,
     drawId: state.drawId + 1,
     serial: state.serial + 1,
   };
@@ -114,6 +118,7 @@ export function guessWord(state) {
     hat: drawn.hat,
     passed: drawn.passed,
     currentWord: drawn.word,
+    seen: noteSeen(state.seen, drawn.word),
     turnGuessed,
     drawId: state.drawId + 1,
   };
@@ -127,6 +132,7 @@ export function passWord(state) {
     hat: drawn.hat,
     passed: drawn.passed,
     currentWord: drawn.word,
+    seen: noteSeen(state.seen, drawn.word),
     drawId: state.drawId + 1,
   };
 }
@@ -138,27 +144,10 @@ export function timeUp(state) {
   }
   return {
     ...state,
-    phase: "buzzer",
-    buzzerWord: state.currentWord,
-    currentWord: null,
-  };
-}
-
-export function resolveBuzzer(state, guessed) {
-  if (state.phase !== "buzzer" || !state.buzzerWord) return state;
-  if (guessed) {
-    return {
-      ...state,
-      phase: "turnSummary",
-      turnGuessed: [...state.turnGuessed, state.buzzerWord],
-      buzzerWord: null,
-    };
-  }
-  return {
-    ...state,
     phase: "turnSummary",
-    hat: [...state.hat, state.buzzerWord],
-    buzzerWord: null,
+    hat: [...state.hat, state.currentWord],
+    currentWord: null,
+    expired: state.currentWord,
   };
 }
 
@@ -181,6 +170,7 @@ export function revokeTurnWord(state, word) {
 
 export function awardTurnWord(state, word) {
   if (state.phase !== "turnSummary" || state.turnGuessed.includes(word)) return state;
+  if (word === state.expired || !state.seen.includes(word)) return state;
   const inHat = state.hat.includes(word);
   const inPassed = state.passed.includes(word);
   if (!inHat && !inPassed) return state;
@@ -211,7 +201,8 @@ export function confirmTurn(state) {
     passed: [],
     turnGuessed: [],
     currentWord: null,
-    buzzerWord: null,
+    seen: [],
+    expired: null,
     turnsPlayed: state.turnsPlayed + 1,
     turnTeamIndex: (state.turnTeamIndex + 1) % teams.length,
   };
@@ -286,7 +277,8 @@ export function continueAfterRound(state) {
     passed: [],
     turnGuessed: [],
     currentWord: null,
-    buzzerWord: null,
+    seen: [],
+    expired: null,
     held: {},
     phase: "ready",
   };
@@ -299,7 +291,6 @@ export function countPieces(state) {
     state.turnGuessed.length +
     state.hat.length +
     state.passed.length +
-    (state.currentWord ? 1 : 0) +
-    (state.buzzerWord ? 1 : 0)
+    (state.currentWord ? 1 : 0)
   );
 }

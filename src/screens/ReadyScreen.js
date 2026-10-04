@@ -39,10 +39,9 @@ export function ReadyScreen({ game }) {
       <Scoreboard teams={match.teams} activeId={team.id} />
       <div className="turn-call">
         <p className="kicker">Сейчас</p>
-        <p className="who">{team.name}</p>
-        <p className="lede">
-          Объясняет {explainer}. В шляпе {inHat}.
-        </p>
+        <p className="who">{explainer}</p>
+        <p className="turn-team">{team.name}</p>
+        <p className="lede">В шляпе {inHat}.</p>
         <p className="lede">
           {opening
             ? "Экран видит только тот, кто объясняет. Слова одни и те же во всех раундах."

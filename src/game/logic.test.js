@@ -12,7 +12,6 @@ import {
   awardTurnWord,
   finishMatch,
   releaseRoundWord,
-  resolveBuzzer,
   revokeTurnWord,
   teamTotal,
   timeUp,
@@ -57,11 +56,11 @@ describe("шляпа", () => {
     expect(countPieces(state)).toBe(3);
 
     state = timeUp(state);
-    expect(state.phase).toBe("buzzer");
-    expect(state.buzzerWord).toBe("арбуз");
-    state = resolveBuzzer(state, false);
     expect(state.phase).toBe("turnSummary");
+    expect(state.expired).toBe("арбуз");
+    expect(state.seen).toEqual(["вишня", "банан", "арбуз"]);
     expect(state.hat).toContain("арбуз");
+    expect(awardTurnWord(state, "арбуз")).toBe(state);
     expect(countPieces(state)).toBe(3);
 
     state = confirmTurn(state);
@@ -100,20 +99,21 @@ describe("шляпа", () => {
     expect(countPieces(state)).toBe(1);
   });
 
-  test("пропущенное слово можно засчитать до конца хода", () => {
-    let state = beginTurn(party(["арбуз", "банан"]));
+  test("после сигнала слово с экрана нельзя засчитать, пропущенное можно", () => {
+    let state = beginTurn(party(["арбуз", "банан", "вишня"]));
+    state = passWord(state);
     state = guessWord(state);
+    const passed = state.passed[0];
     state = timeUp(state);
-    state = resolveBuzzer(state, false);
     expect(state.phase).toBe("turnSummary");
+    expect(state.seen).toEqual(["вишня", "банан", "арбуз"]);
     expect(state.hat).toEqual(["арбуз"]);
-    state = awardTurnWord(state, "арбуз");
-    expect(state.turnGuessed).toEqual(["банан", "арбуз"]);
-    expect(state.hat).toEqual([]);
-    expect(countPieces(state)).toBe(2);
-    state = confirmTurn(state);
-    expect(state.phase).toBe("roundSummary");
-    expect(teamTotal(state.teams[0])).toBe(2);
+    expect(awardTurnWord(state, "арбуз")).toBe(state);
+    state = awardTurnWord(state, passed);
+    expect(state.turnGuessed).toEqual(["банан", passed]);
+    expect(state.expired).toBe("арбуз");
+    expect(state.hat).toEqual(["арбуз"]);
+    expect(countPieces(state)).toBe(3);
   });
 
   test("после раунда слово можно снять и засчитать другой команде", () => {

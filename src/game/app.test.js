@@ -88,11 +88,6 @@ describe("партия на экране", () => {
           fireEvent.click(guess);
           continue;
         }
-        const buzz = screen.queryByRole("button", { name: "Да, угадали" });
-        if (buzz) {
-          fireEvent.click(buzz);
-          continue;
-        }
         const next = screen.queryByRole("button", { name: /Дальше:|Завершить раунд|К итогам/ });
         if (next) {
           fireEvent.click(next);
@@ -162,7 +157,7 @@ describe("партия на экране", () => {
     expect(screen.queryByText("арбуз")).toBeNull();
   });
 
-  test("по истечении времени слово можно засчитать", async () => {
+  test("по истечении времени слово нельзя засчитать", async () => {
     jest.useFakeTimers();
     try {
       renderGame();
@@ -174,15 +169,21 @@ describe("партия на экране", () => {
         await Promise.resolve();
       });
       fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
-      const shown = wordOnSlip();
+      const skipped = wordOnSlip();
+      fireEvent.click(screen.getByRole("button", { name: "В шляпу" }));
+      const guessed = wordOnSlip();
+      fireEvent.click(screen.getByRole("button", { name: "Угадали" }));
+      const expired = wordOnSlip();
       act(() => {
         jest.advanceTimersByTime(21000);
       });
-      expect(screen.getByRole("button", { name: "Да, угадали" })).toBeTruthy();
-      expect(wordOnSlip()).toBe(shown);
-      fireEvent.click(screen.getByRole("button", { name: "Да, угадали" }));
+      expect(screen.queryByRole("button", { name: "Да, угадали" })).toBeNull();
       expect(screen.getByRole("heading", { name: "+1" })).toBeTruthy();
-      expect(screen.getByText(shown)).toBeTruthy();
+      expect(screen.getByRole("button", { name: skipped }).getAttribute("aria-pressed")).toBe("false");
+      expect(screen.getByRole("button", { name: guessed }).getAttribute("aria-pressed")).toBe("true");
+      expect(screen.queryByRole("button", { name: expired })).toBeNull();
+      expect(screen.getByText(expired)).toBeTruthy();
+      expect(document.querySelectorAll(".word-row")).toHaveLength(3);
     } finally {
       jest.useRealTimers();
     }

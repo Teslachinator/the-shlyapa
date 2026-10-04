@@ -7,7 +7,6 @@ import { SetupScreen } from "./screens/SetupScreen";
 import { CoverScreen, WriteScreen } from "./screens/EntryScreens";
 import { ReadyScreen } from "./screens/ReadyScreen";
 import { PlayScreen } from "./screens/PlayScreen";
-import { BuzzerScreen } from "./screens/BuzzerScreen";
 import { TurnSummaryScreen } from "./screens/TurnSummaryScreen";
 import { RoundSummaryScreen } from "./screens/RoundSummaryScreen";
 import { FinalScreen } from "./screens/FinalScreen";
@@ -56,7 +55,6 @@ export default function App() {
       {game.view === "write" && <WriteScreen key={game.entry.index} game={game} />}
       {game.view === "ready" && <ReadyScreen game={game} />}
       {game.view === "play" && <PlayScreen game={game} />}
-      {game.view === "buzzer" && <BuzzerScreen game={game} />}
       {game.view === "turnSummary" && <TurnSummaryScreen game={game} />}
       {game.view === "roundSummary" && <RoundSummaryScreen game={game} />}
       {game.view === "finished" && <FinalScreen game={game} />}

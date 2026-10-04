@@ -10,7 +10,6 @@ import {
   guessWord,
   passWord,
   releaseRoundWord,
-  resolveBuzzer as closeBuzzer,
   revokeTurnWord,
   timeUp,
 } from "./engine";
@@ -372,15 +371,6 @@ export function useHatGame() {
     actOnWord("pass");
   }
 
-  function resolveBuzzer(guessed) {
-    if (soundRef.current) {
-      if (guessed) playPop();
-      else playPass();
-    }
-    pulse(10);
-    setMatch((current) => (current ? closeBuzzer(current, guessed) : current));
-  }
-
   function signal(up) {
     if (!soundRef.current) return;
     playSignal(up);
@@ -396,7 +386,8 @@ export function useHatGame() {
 
   function award(word) {
     const current = matchRef.current;
-    if (!current || current.turnGuessed.includes(word)) return;
+    if (!current || current.turnGuessed.includes(word) || current.expired === word) return;
+    if (!current.seen?.includes(word)) return;
     if (!current.hat.includes(word) && !current.passed.includes(word)) return;
     signal(true);
     setMatch((latest) => (latest ? awardTurnWord(latest, word) : latest));
@@ -490,7 +481,6 @@ export function useHatGame() {
     begin,
     guess,
     pass,
-    resolveBuzzer,
     revoke,
     award,
     releaseWord,
