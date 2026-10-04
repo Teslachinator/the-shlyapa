@@ -17,7 +17,7 @@ import {
   teamTotal,
   timeUp,
 } from "./engine";
-import { DEFAULT_SETUP, sanitizeSetup, validateSetup } from "./setup";
+import { DEFAULT_SETUP, freshTeam, randomTeamName, sanitizeSetup, TEAM_NAMES, validateSetup } from "./setup";
 import { checkDrafts, mergeWords, uniqueWords } from "./words";
 
 const identity = () => 0.999999;
@@ -178,5 +178,29 @@ describe("шляпа", () => {
     expect(broken.turnSeconds).toBe(30);
     expect(broken.rounds).toEqual(["explain", "oneWord", "mime"]);
     expect(validateSetup(broken).some((error) => error.includes("имена"))).toBe(true);
+    expect(DEFAULT_SETUP.teams.map((team) => team.name)).toEqual([TEAM_NAMES[0], TEAM_NAMES[1]]);
+    expect(new Set(DEFAULT_SETUP.teams.map((team) => team.name)).size).toBe(2);
+    const migrated = sanitizeSetup(
+      {
+        teams: [
+          { id: "t1", name: "Красные", color: 0, players: ["Кепка", "Пончик"] },
+          { id: "t2", name: "Синие", color: 1, players: ["Барсук", "Вареник"] },
+        ],
+      },
+      () => 0.5
+    );
+    expect(migrated.teams.map((team) => team.name)).toEqual([TEAM_NAMES[10], TEAM_NAMES[9]]);
+    expect(randomTeamName([], () => 0)).toBe(TEAM_NAMES[0]);
+    expect(randomTeamName([TEAM_NAMES[0]], () => 0)).toBe(TEAM_NAMES[1]);
+    const custom = sanitizeSetup({
+      teams: [
+        { id: "a", name: "Красные", color: 0, players: ["Аня"] },
+        { id: "b", name: "Волки", color: 1, players: ["Боря"] },
+      ],
+    });
+    expect(custom.teams.map((team) => team.name)).toEqual(["Красные", "Волки"]);
+    const third = freshTeam(DEFAULT_SETUP.teams, () => 0);
+    expect(third.name).toBe(TEAM_NAMES[2]);
+    expect(third.players).toEqual(["Кактус", "Пельмень"]);
   });
 });

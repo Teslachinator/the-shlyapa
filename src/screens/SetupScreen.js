@@ -32,15 +32,25 @@ export function SetupScreen({ game }) {
       <div className="stack">
         {setup.teams.map((team, teamIndex) => (
           <article key={team.id} className="card team-card" style={teamStyle(team.color)}>
-            <label className="field">
-              Команда {teamIndex + 1}
-              <input
-                type="text"
-                value={team.name}
-                maxLength={24}
-                onChange={(event) => game.setTeamName(team.id, event.target.value)}
-              />
-            </label>
+            <div className="team-title">
+              <label className="field">
+                Команда {teamIndex + 1}
+                <input
+                  type="text"
+                  value={team.name}
+                  maxLength={24}
+                  onChange={(event) => game.setTeamName(team.id, event.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                className="icon-btn team-roll"
+                aria-label={`Случайное название, команда ${teamIndex + 1}`}
+                onClick={() => game.rollTeamName(team.id)}
+              >
+                ↻
+              </button>
+            </div>
             <div className="players">
               {team.players.map((player, index) => (
                 <div className="player-row" key={`${team.id}-${index}`}>

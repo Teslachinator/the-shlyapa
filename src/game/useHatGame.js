@@ -26,10 +26,12 @@ import {
 } from "./feedback";
 import { ROUNDS } from "./rounds";
 import {
+  createDefaultTeams,
   createEntry,
   DEFAULT_SETUP,
   freshTeam,
   nextNicknames,
+  randomTeamName,
   sanitizeSetup,
   validateSetup,
 } from "./setup";
@@ -40,7 +42,7 @@ const STORAGE_KEY = "shlyapa-setup-v1";
 function readSetup() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SETUP;
+    if (!raw) return { ...DEFAULT_SETUP, teams: createDefaultTeams() };
     return sanitizeSetup(JSON.parse(raw));
   } catch {
     return DEFAULT_SETUP;
@@ -149,6 +151,18 @@ export function useHatGame() {
 
   function setTeamName(teamId, name) {
     updateTeam(teamId, (team) => ({ ...team, name }));
+  }
+
+  function rollTeamName(teamId) {
+    setError("");
+    setSetup((current) => ({
+      ...current,
+      teams: current.teams.map((team) => {
+        if (team.id !== teamId) return team;
+        const taken = current.teams.map((item) => item.name);
+        return { ...team, name: randomTeamName(taken) };
+      }),
+    }));
   }
 
   function setPlayer(teamId, index, value) {
@@ -462,6 +476,7 @@ export function useHatGame() {
     leaveEntry,
     setField,
     setTeamName,
+    rollTeamName,
     setPlayer,
     addPlayer,
     removePlayer,

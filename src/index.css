@@ -82,8 +82,16 @@ p {
   flex-direction: column;
   overflow: hidden;
   background:
-    radial-gradient(120% 55% at 50% -10%, rgba(226, 177, 90, 0.16), transparent 55%),
-    radial-gradient(70% 40% at 100% 100%, rgba(143, 45, 45, 0.22), transparent 50%),
+    radial-gradient(
+      120% 55% at 50% -10%,
+      rgba(226, 177, 90, 0.16),
+      transparent 55%
+    ),
+    radial-gradient(
+      70% 40% at 100% 100%,
+      rgba(143, 45, 45, 0.22),
+      transparent 50%
+    ),
     var(--ink);
 }
 
@@ -372,7 +380,9 @@ p {
 .btn-hat,
 .btn-yes {
   color: var(--paper);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .btn-hat {
@@ -447,6 +457,32 @@ p {
   border-left: 8px solid var(--team);
 }
 
+.team-title {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 10px 10px 10px 12px;
+  border-radius: 14px;
+  background: var(--team-soft);
+}
+
+.team-title .field {
+  flex: 1;
+  min-width: 0;
+  color: var(--team);
+}
+
+.team-card .team-title input {
+  border-bottom: 0;
+  padding: 0;
+  background: transparent;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -473,7 +509,13 @@ p {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: 8px;
+  margin-top: 4px;
+}
+
+.team-card .player-row input {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4a4038;
 }
 
 .player-row {
@@ -492,6 +534,13 @@ p {
   color: var(--ink);
   font-size: 22px;
   line-height: 1;
+}
+
+.icon-btn.team-roll {
+  background: var(--team);
+  color: var(--paper);
+  border-radius: 12px;
+  font-weight: 800;
 }
 
 .row-actions {
@@ -669,7 +718,9 @@ input[type="range"] {
   border: 0;
   border-radius: 50%;
   background: var(--hat);
-  box-shadow: 0 0 0 4px #f3ead7, 0 4px 0 #4e1515;
+  box-shadow:
+    0 0 0 4px #f3ead7,
+    0 4px 0 #4e1515;
 }
 
 .hat-range::-moz-range-track {
@@ -685,7 +736,9 @@ input[type="range"] {
   border: 0;
   border-radius: 50%;
   background: var(--hat);
-  box-shadow: 0 0 0 4px #f3ead7, 0 4px 0 #4e1515;
+  box-shadow:
+    0 0 0 4px #f3ead7,
+    0 4px 0 #4e1515;
 }
 
 .hat-count-scale {
@@ -787,8 +840,11 @@ input[type="range"] {
 .ready,
 .cover,
 .screen-play {
-  background:
-    radial-gradient(90% 42% at 50% -8%, color-mix(in srgb, var(--team) 58%, transparent), transparent 70%);
+  background: radial-gradient(
+    90% 42% at 50% -8%,
+    color-mix(in srgb, var(--team) 58%, transparent),
+    transparent 70%
+  );
 }
 
 .screen-play {
@@ -892,7 +948,11 @@ input[type="range"] {
 .slip {
   width: min(100%, 440px);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 32%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, 0) 32%
+    ),
     #f3ead7;
   color: var(--ink);
   border-radius: 18px;

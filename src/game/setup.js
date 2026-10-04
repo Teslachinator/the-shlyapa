@@ -7,6 +7,29 @@ export const WORD_MIN = 20;
 export const WORD_MAX = 80;
 export const WORD_STEP = 5;
 
+export const TEAM_NAMES = [
+  "Дохлые пончики",
+  "Гнилые барсуки",
+  "Мангалкины",
+  "Тапки жмурика",
+  "Свиноты",
+  "Чумные сырки",
+  "Гробовые бублики",
+  "Холодные закуски",
+  "Обглодыши",
+  "Кепки с могилы",
+  "Пышки в саване",
+  "Утюги палача",
+  "Пряники с прахом",
+  "Потаскумбрии",
+  "Еноты-упыри",
+  "Лимоны в урне",
+  "Шляпы покойника",
+  "Потные бляди",
+  "Ватрушки червей",
+  "Шляпники",
+];
+
 export const NICKNAMES = [
   "Кепка",
   "Пончик",
@@ -31,12 +54,36 @@ export const NICKNAMES = [
 ];
 
 const PREVIOUS_DEFAULTS = ["Алиса", "Борис", "Вера", "Глеб"];
+const PREVIOUS_TEAM_DEFAULTS = [
+  ["Красные", "Синие"],
+  ["Пончики", "Барсуки"],
+  ["Дохлые пончики", "Гнилые барсуки"],
+];
+
+const TEAM_TEMPLATE = [
+  { id: "t1", color: 0, players: ["Кепка", "Пончик"] },
+  { id: "t2", color: 1, players: ["Барсук", "Вареник"] },
+];
+
+export function randomTeamName(takenNames, random = Math.random) {
+  const taken = new Set(takenNames.map((name) => String(name).trim()).filter(Boolean));
+  const free = TEAM_NAMES.filter((name) => !taken.has(name));
+  const pool = free.length ? free : [`Команда ${taken.size + 1}`];
+  const index = Math.min(pool.length - 1, Math.floor(random() * pool.length));
+  return pool[index];
+}
+
+export function createDefaultTeams(random = Math.random) {
+  const names = [];
+  return TEAM_TEMPLATE.map((team) => {
+    const name = randomTeamName(names, random);
+    names.push(name);
+    return { ...team, name, players: [...team.players] };
+  });
+}
 
 export const DEFAULT_SETUP = {
-  teams: [
-    { id: "t1", name: "Красные", color: 0, players: ["Кепка", "Пончик"] },
-    { id: "t2", name: "Синие", color: 1, players: ["Барсук", "Вареник"] },
-  ],
+  teams: createDefaultTeams(() => 0),
   source: "dictionary",
   dictionaries: ["easy"],
   wordCount: 30,
@@ -69,7 +116,9 @@ export function snapWordCount(value) {
 function normalizeTeam(team, index) {
   if (!team || typeof team !== "object") return null;
   const players = Array.isArray(team.players)
-    ? team.players.slice(0, 8).map((player) => String(player ?? "").slice(0, 24))
+    ? team.players
+        .slice(0, 8)
+        .map((player) => String(player ?? "").slice(0, 24))
     : ["Игрок 1"];
   return {
     id: typeof team.id === "string" && team.id ? team.id : `t-${index}`,
@@ -79,7 +128,7 @@ function normalizeTeam(team, index) {
   };
 }
 
-export function sanitizeSetup(input) {
+export function sanitizeSetup(input, random = Math.random) {
   const source = input?.source === "custom" ? "custom" : "dictionary";
   const dictionaries = sanitizeDictionaries(input);
   const picked = Array.isArray(input?.rounds)
@@ -88,15 +137,17 @@ export function sanitizeSetup(input) {
   let teams = Array.isArray(input?.teams)
     ? input.teams.slice(0, 6).map(normalizeTeam).filter(Boolean)
     : [];
-  if (teams.length < 2) teams = DEFAULT_SETUP.teams.map((team) => ({ ...team, players: [...team.players] }));
-  teams = refreshLegacyNames(teams);
+  if (teams.length < 2) teams = createDefaultTeams(random);
+  else teams = refreshLegacyTeamNames(refreshLegacyNames(teams), random);
   return {
     source,
     dictionaries,
     rounds: picked.length ? picked : [...DEFAULT_SETUP.rounds],
     wordCount: snapWordCount(input?.wordCount),
     wordsPerPlayer: clamp(Number(input?.wordsPerPlayer) || 5, 4, 10),
-    turnSeconds: TURN_OPTIONS.includes(Number(input?.turnSeconds)) ? Number(input.turnSeconds) : 30,
+    turnSeconds: TURN_OPTIONS.includes(Number(input?.turnSeconds))
+      ? Number(input.turnSeconds)
+      : 30,
     sound: input?.sound !== false,
     teams,
   };
@@ -145,10 +196,36 @@ export function createEntry(setup) {
   };
 }
 
+function sameNames(names, previous) {
+  return names.length === previous.length && names.every((name, index) => name === previous[index]);
+}
+
+function pickFreshNames(count, random) {
+  let chosen = [];
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    chosen = [];
+    for (let index = 0; index < count; index += 1) chosen.push(randomTeamName(chosen, random));
+    if (PREVIOUS_TEAM_DEFAULTS.every((previous) => !sameNames(chosen, previous))) return chosen;
+  }
+  return chosen;
+}
+
 export function nextNicknames(teams, count) {
-  const taken = new Set(teams.flatMap((team) => team.players.map((player) => player.trim())));
+  const taken = new Set(
+    teams.flatMap((team) => team.players.map((player) => player.trim())),
+  );
   const free = NICKNAMES.filter((name) => !taken.has(name));
-  return Array.from({ length: count }, (_, index) => free[index] || `Игрок ${taken.size + index + 1}`);
+  return Array.from(
+    { length: count },
+    (_, index) => free[index] || `Игрок ${taken.size + index + 1}`,
+  );
+}
+
+function refreshLegacyTeamNames(teams, random) {
+  const names = teams.map((team) => team.name);
+  if (!PREVIOUS_TEAM_DEFAULTS.some((previous) => sameNames(names, previous))) return teams;
+  const chosen = pickFreshNames(teams.length, random);
+  return teams.map((team, index) => ({ ...team, name: chosen[index] }));
 }
 
 function refreshLegacyNames(teams) {
@@ -165,10 +242,13 @@ function refreshLegacyNames(teams) {
   });
 }
 
-export function freshTeam(teams) {
+export function freshTeam(teams, random = Math.random) {
   return {
     id: `t-${Math.random().toString(36).slice(2, 9)}`,
-    name: `Команда ${teams.length + 1}`,
+    name: randomTeamName(
+      teams.map((team) => team.name),
+      random
+    ),
     color: nextColor(teams),
     players: nextNicknames(teams, 2),
   };
