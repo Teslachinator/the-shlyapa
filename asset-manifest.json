@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/the-shlyapa/static/css/main.a7121458.css",
-    "main.js": "/the-shlyapa/static/js/main.163ccdae.js",
+    "main.css": "/the-shlyapa/static/css/main.bf2d122a.css",
+    "main.js": "/the-shlyapa/static/js/main.9da51bed.js",
     "index.html": "/the-shlyapa/index.html",
-    "main.a7121458.css.map": "/the-shlyapa/static/css/main.a7121458.css.map",
-    "main.163ccdae.js.map": "/the-shlyapa/static/js/main.163ccdae.js.map"
+    "main.bf2d122a.css.map": "/the-shlyapa/static/css/main.bf2d122a.css.map",
+    "main.9da51bed.js.map": "/the-shlyapa/static/js/main.9da51bed.js.map"
   },
   "entrypoints": [
-    "static/css/main.a7121458.css",
-    "static/js/main.163ccdae.js"
+    "static/css/main.bf2d122a.css",
+    "static/js/main.9da51bed.js"
   ]
 }
