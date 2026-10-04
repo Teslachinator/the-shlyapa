@@ -1,24 +1,28 @@
 const NAV_BAR = 48;
 const NAV_BAR_LANDSCAPE = 24;
-const ALREADY_CLEAR = 64;
+const ALREADY_CLEAR = 48;
+const KEYBOARD_GAP = 120;
+
+export function viewportHeight({ inner, visual, scale = 1 }) {
+  if (!inner) return Math.round(visual || 0);
+  if (!visual || scale !== 1) return Math.round(inner);
+  const gap = inner - visual;
+  if (gap > 0 && gap <= KEYBOARD_GAP) return Math.round(visual);
+  return Math.round(inner);
+}
 
 export function safeBottomFallback({
   android,
-  appShell,
   insetBottom,
   screenHeight,
-  viewportHeight,
+  viewportHeight: height,
   portrait,
 }) {
-  if (!android || !appShell) return null;
-  if (!screenHeight || !viewportHeight) return null;
+  if (!android) return null;
+  if (!screenHeight || !height) return null;
   if (insetBottom >= 8) return null;
-  if (screenHeight - viewportHeight >= ALREADY_CLEAR) return null;
+  if (screenHeight - height >= ALREADY_CLEAR) return null;
   return portrait ? NAV_BAR : NAV_BAR_LANDSCAPE;
-}
-
-function matches(query) {
-  return window.matchMedia?.(query)?.matches === true;
 }
 
 function readInsetBottom() {
@@ -32,33 +36,36 @@ function readInsetBottom() {
   return value;
 }
 
-function cssScreenHeight() {
+function cssScreenHeight(viewport) {
   const raw = window.screen?.height || 0;
-  const viewport = window.innerHeight || 0;
   const dpr = window.devicePixelRatio || 1;
   if (dpr > 1 && raw > viewport * 1.5) return raw / dpr;
   return raw;
 }
 
-function applySafeBottom() {
-  const fallback = safeBottomFallback({
-    android: /Android/i.test(navigator.userAgent || ""),
-    appShell:
-      matches("(display-mode: standalone)") ||
-      matches("(display-mode: fullscreen)") ||
-      /; wv\)/.test(navigator.userAgent || ""),
-    insetBottom: readInsetBottom(),
-    screenHeight: cssScreenHeight(),
-    viewportHeight: window.innerHeight || 0,
-    portrait: window.innerHeight >= window.innerWidth,
+function applyViewport() {
+  const height = viewportHeight({
+    inner: window.innerHeight || 0,
+    visual: window.visualViewport?.height || 0,
+    scale: window.visualViewport?.scale || 1,
   });
   const root = document.documentElement;
+  if (height > 0) root.style.setProperty("--app-height", `${height}px`);
+
+  const fallback = safeBottomFallback({
+    android: /Android/i.test(navigator.userAgent || ""),
+    insetBottom: readInsetBottom(),
+    screenHeight: cssScreenHeight(height),
+    viewportHeight: height,
+    portrait: window.innerHeight >= window.innerWidth,
+  });
   if (fallback == null) root.style.removeProperty("--safe-bottom");
   else root.style.setProperty("--safe-bottom", `${fallback}px`);
 }
 
 export function installSafeArea() {
-  applySafeBottom();
-  window.addEventListener("resize", applySafeBottom);
-  window.addEventListener("orientationchange", applySafeBottom);
+  applyViewport();
+  window.addEventListener("resize", applyViewport);
+  window.addEventListener("orientationchange", applyViewport);
+  window.visualViewport?.addEventListener("resize", applyViewport);
 }

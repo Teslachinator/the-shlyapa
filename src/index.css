@@ -19,7 +19,11 @@
   box-sizing: border-box;
 }
 
-html,
+html {
+  height: var(--app-height, 100dvh);
+  overflow: hidden;
+}
+
 body,
 #root {
   height: 100%;
@@ -27,7 +31,6 @@ body,
 
 body {
   margin: 0;
-  height: 100dvh;
   overflow: hidden;
   background: #100c0a;
   color: var(--paper);
