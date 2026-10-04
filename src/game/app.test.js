@@ -27,6 +27,12 @@ function wordOnSlip() {
 
 describe("партия на экране", () => {
   beforeEach(() => {
+    window.matchMedia = jest.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    }));
     global.fetch = jest.fn(async () => ({
       ok: true,
       text: async () => EIGHT.join("\n"),
@@ -105,14 +111,14 @@ describe("партия на экране", () => {
     expect(screen.getByText(/\+7/)).toBeTruthy();
     expect(screen.getByText(/\+1/)).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Дальше: Одно слово" }));
-    expect(screen.getByRole("heading", { name: "Объяснение одним словом" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
-    expect(screen.getByText("Только одно слово, без пояснений")).toBeTruthy();
-
-    finish(() => screen.queryByRole("heading", { level: 1, name: "Пантомима" }));
+    fireEvent.click(screen.getByRole("button", { name: "Дальше: Пантомима" }));
+    expect(screen.getByRole("heading", { name: "Пантомима" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
     expect(screen.getByText("Без слов, звуков и букв")).toBeTruthy();
+
+    finish(() => screen.queryByRole("heading", { level: 1, name: "Объяснение одним словом" }));
+    fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
+    expect(screen.getByText("Только одно слово, без пояснений")).toBeTruthy();
     finish();
 
     expect(screen.getByRole("button", { name: "Ещё партию" })).toBeTruthy();

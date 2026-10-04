@@ -176,7 +176,7 @@ describe("шляпа", () => {
     expect(sanitizeSetup({ wordCount: 8 }).wordCount).toBe(20);
     expect(sanitizeSetup({ wordCount: 23 }).wordCount).toBe(25);
     expect(broken.turnSeconds).toBe(30);
-    expect(broken.rounds).toEqual(["explain", "oneWord", "mime"]);
+    expect(broken.rounds).toEqual(["explain", "mime", "oneWord"]);
     expect(validateSetup(broken).some((error) => error.includes("имена"))).toBe(true);
     expect(DEFAULT_SETUP.teams.map((team) => team.name)).toEqual([TEAM_NAMES[0], TEAM_NAMES[1]]);
     expect(new Set(DEFAULT_SETUP.teams.map((team) => team.name)).size).toBe(2);

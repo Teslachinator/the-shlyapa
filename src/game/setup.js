@@ -89,7 +89,7 @@ export const DEFAULT_SETUP = {
   wordCount: 30,
   wordsPerPlayer: 5,
   turnSeconds: 30,
-  rounds: ["explain", "oneWord", "mime"],
+  rounds: ["explain", "mime", "oneWord"],
   sound: true,
 };
 
