@@ -9,6 +9,7 @@
   --muted: rgba(243, 234, 215, 0.72);
   --display: "Unbounded", "Segoe UI", sans-serif;
   --text: "Manrope", "Segoe UI", sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   color-scheme: dark;
 }
 
@@ -81,6 +82,7 @@ p {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-bottom: var(--safe-bottom);
   background:
     radial-gradient(
       120% 55% at 50% -10%,
@@ -113,7 +115,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  padding: 16px 20px;
 }
 
 .kicker {
@@ -907,7 +909,7 @@ input[type="range"] {
 .screen-play {
   flex: 1;
   min-height: 0;
-  padding: 14px 18px calc(12px + env(safe-area-inset-bottom));
+  padding: 14px 18px 12px;
 }
 
 .screen-play.urgent {
@@ -1217,7 +1219,7 @@ button.word-row:active {
   z-index: 5;
   display: flex;
   align-items: flex-end;
-  padding: 16px;
+  padding: 16px 16px calc(16px + var(--safe-bottom));
   background: rgba(16, 12, 10, 0.72);
 }
 
