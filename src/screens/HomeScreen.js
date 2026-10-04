@@ -5,7 +5,7 @@ import { Stage } from "../components/Stage";
 const INSTALL_CASES = [
   {
     title: "iPhone, Safari",
-    text: "Нажмите «Поделиться», затем «На экран Домой». Открывайте Шляпу с иконки.",
+    text: "Нажмите «Поделиться», затем «На экран Домой». Открывайте The Shlyapa с иконки.",
   },
   {
     title: "Android, Chrome",
@@ -148,7 +148,7 @@ export function HomeScreen({ game }) {
         <div className="home-hero">
           <HatMark />
           <p className="kicker">командная игра</p>
-          <h1>Шляпа</h1>
+          <h1>The Shlyapa</h1>
           <p className="lede">
             Объясните слово, пока идёт время. Потом — одно слово и пантомима.
             Телефон передают по кругу.

@@ -35,7 +35,7 @@ describe("партия на экране", () => {
 
   test("словарь, пас, три раунда и итог", async () => {
     renderGame();
-    expect(screen.getByRole("heading", { name: "Шляпа" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "The Shlyapa" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Правила" }));
     expect(screen.getByRole("heading", { name: "Правила" })).toBeTruthy();
