@@ -66,11 +66,11 @@ describe("партия на экране", () => {
     fireEvent.click(screen.getByRole("button", { name: "Понятно" }));
 
     fireEvent.click(screen.getByRole("button", { name: "Играть" }));
-    const keeper = screen.getByDisplayValue("Кепка");
+    const keeper = screen.getByDisplayValue("Краш");
     fireEvent.change(keeper, { target: { value: " " } });
     fireEvent.click(screen.getByRole("button", { name: "Начать партию" }));
     expect(screen.getByRole("alert").textContent).toMatch(/имена/);
-    fireEvent.change(keeper, { target: { value: "Кепка" } });
+    fireEvent.change(keeper, { target: { value: "Краш" } });
     fireEvent.click(screen.getByRole("button", { name: "20" }));
 
     await startDictionary();
@@ -171,10 +171,10 @@ describe("партия на экране", () => {
     fireEvent.click(screen.getByRole("button", { name: "Играть" }));
     fireEvent.click(screen.getByRole("button", { name: "Свои слова" }));
     fireEvent.click(
-      screen.getByRole("button", { name: "Убрать игрока Пончик" }),
+      screen.getByRole("button", { name: "Убрать игрока Гигачад" }),
     );
     fireEvent.click(
-      screen.getByRole("button", { name: "Убрать игрока Вареник" }),
+      screen.getByRole("button", { name: "Убрать игрока Нормис" }),
     );
     fireEvent.change(screen.getByRole("slider"), { target: { value: "4" } });
     fireEvent.click(screen.getByRole("button", { name: "Писать слова" }));
@@ -194,7 +194,7 @@ describe("партия на экране", () => {
     fireEvent.change(fields[1], { target: { value: "банан" } });
     fireEvent.click(screen.getByRole("button", { name: "Положить в шляпу" }));
     expect(screen.queryByText("арбуз")).toBeNull();
-    expect(screen.getByText("Барсук")).toBeTruthy();
+    expect(screen.getByText("Душнила")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Писать слова" }));
     fields = screen.getAllByRole("textbox");

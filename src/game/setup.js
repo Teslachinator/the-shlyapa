@@ -9,26 +9,26 @@ export const WORD_MAX = 80;
 export const WORD_STEP = 5;
 
 export const TEAM_NAMES = [
-  "Дохлые пончики",
-  "Гнилые барсуки",
+  "Сигмы района",
+  "Ризз-патруль",
+  "Аурафармеры",
+  "Скибиди-шляпы",
+  "Делюлю-клуб",
+  "Мейны сезона",
+  "НПС на чилле",
+  "Вайб-кодекс",
   "Мангалкины",
-  "Тапки жмурика",
-  "Свиноты",
-  "Чумные сырки",
-  "Гробовые бублики",
-  "Холодные закуски",
-  "Обглодыши",
-  "Кепки с могилы",
-  "Пышки в саване",
-  "Утюги палача",
-  "Пряники с прахом",
-  "Потаскумбрии",
-  "Еноты-упыри",
-  "Лимоны в урне",
-  "Шляпы покойника",
+  "Кринж-патруль",
+  "Флекс-машина",
   "Потные бляди",
-  "Ватрушки червей",
-  "Шляпники",
+  "Потаскумбрии",
+  "Клатч или бан",
+  "Тильт-мастерс",
+  "Чилл до талого",
+  "Рофлодромы",
+  "Гоатед шляпы",
+  "Альфа-пельмени",
+  "Слэй-комитет",
 ];
 
 export const NICKNAMES = [
@@ -52,13 +52,26 @@ export const NICKNAMES = [
   "Бегемот",
   "Пряник",
   "Енот",
-];
-
-const PREVIOUS_DEFAULTS = ["Алиса", "Борис", "Вера", "Глеб"];
-const PREVIOUS_TEAM_DEFAULTS = [
-  ["Красные", "Синие"],
-  ["Пончики", "Барсуки"],
-  ["Дохлые пончики", "Гнилые барсуки"],
+  "Краш",
+  "Гигачад",
+  "Душнила",
+  "Нормис",
+  "Скуф",
+  "Зумер",
+  "Брейнрот",
+  "Глейзер",
+  "Кукед",
+  "Коуп",
+  "Дрип",
+  "Смурф",
+  "Керри",
+  "Фидер",
+  "Токсик",
+  "Анон",
+  "Бустер",
+  "Стример",
+  "Пранкер",
+  "Думер",
 ];
 
 const TEAM_TEMPLATE = [
@@ -140,7 +153,6 @@ export function sanitizeSetup(input, random = Math.random) {
     ? input.teams.slice(0, 6).map(normalizeTeam).filter(Boolean)
     : [];
   if (teams.length < 2) teams = createDefaultTeams(random);
-  else teams = refreshLegacyTeamNames(refreshLegacyNames(teams), random);
   return {
     source,
     dictionaries,
@@ -198,27 +210,6 @@ export function createEntry(setup) {
   };
 }
 
-function sameNames(names, previous) {
-  return (
-    names.length === previous.length &&
-    names.every((name, index) => name === previous[index])
-  );
-}
-
-function pickFreshNames(count, random) {
-  let chosen = [];
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    chosen = [];
-    for (let index = 0; index < count; index += 1)
-      chosen.push(randomTeamName(chosen, random));
-    if (
-      PREVIOUS_TEAM_DEFAULTS.every((previous) => !sameNames(chosen, previous))
-    )
-      return chosen;
-  }
-  return chosen;
-}
-
 export function nextNicknames(teams, count) {
   const taken = new Set(
     teams.flatMap((team) => team.players.map((player) => player.trim())),
@@ -228,28 +219,6 @@ export function nextNicknames(teams, count) {
     { length: count },
     (_, index) => free[index] || `Игрок ${taken.size + index + 1}`,
   );
-}
-
-function refreshLegacyTeamNames(teams, random) {
-  const names = teams.map((team) => team.name);
-  if (!PREVIOUS_TEAM_DEFAULTS.some((previous) => sameNames(names, previous)))
-    return teams;
-  const chosen = pickFreshNames(teams.length, random);
-  return teams.map((team, index) => ({ ...team, name: chosen[index] }));
-}
-
-function refreshLegacyNames(teams) {
-  const names = teams.flatMap((team) => team.players);
-  const legacy =
-    names.length === PREVIOUS_DEFAULTS.length &&
-    names.every((name, index) => name === PREVIOUS_DEFAULTS[index]);
-  if (!legacy) return teams;
-  let cursor = 0;
-  return teams.map((team) => {
-    const players = NICKNAMES.slice(cursor, cursor + team.players.length);
-    cursor += team.players.length;
-    return { ...team, players };
-  });
 }
 
 export function freshTeam(teams, random = Math.random) {

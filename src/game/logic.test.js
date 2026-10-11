@@ -240,16 +240,6 @@ describe("шляпа", () => {
     expect(validateSetup(broken).some((error) => error.includes("имена"))).toBe(true);
     expect(DEFAULT_SETUP.teams.map((team) => team.name)).toEqual([TEAM_NAMES[0], TEAM_NAMES[1]]);
     expect(new Set(DEFAULT_SETUP.teams.map((team) => team.name)).size).toBe(2);
-    const migrated = sanitizeSetup(
-      {
-        teams: [
-          { id: "t1", name: "Красные", color: 0, players: ["Кепка", "Пончик"] },
-          { id: "t2", name: "Синие", color: 1, players: ["Барсук", "Вареник"] },
-        ],
-      },
-      () => 0.5
-    );
-    expect(migrated.teams.map((team) => team.name)).toEqual([TEAM_NAMES[10], TEAM_NAMES[9]]);
     expect(randomTeamName([], () => 0)).toBe(TEAM_NAMES[0]);
     expect(randomTeamName([TEAM_NAMES[0]], () => 0)).toBe(TEAM_NAMES[1]);
     const custom = sanitizeSetup({
