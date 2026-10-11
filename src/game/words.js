@@ -37,6 +37,12 @@ export const DICTIONARIES = [
     title: "Знаменитости",
     text: "Имена. Отдельный вариант: здесь как раз имена собственные.",
   },
+  {
+    id: "hype",
+    file: "hype.txt",
+    title: "Хайп",
+    text: "Мемы и сленг, которые уже у всех на языке.",
+  },
 ];
 
 export function uniqueWords(text) {
