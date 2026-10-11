@@ -29,9 +29,9 @@ import {
   createDefaultTeams,
   createEntry,
   DEFAULT_SETUP,
+  drawTeamName,
   freshTeam,
   nextNicknames,
-  randomTeamName,
   sanitizeSetup,
   validateSetup,
 } from "./setup";
@@ -68,6 +68,7 @@ export function useHatGame() {
   const soundRef = useRef(true);
   const busyRef = useRef(false);
   const entryLock = useRef(false);
+  const nameDeck = useRef(null);
   const pausedAt = useRef(0);
   const prepTimer = useRef(0);
 
@@ -157,13 +158,16 @@ export function useHatGame() {
 
   function rollTeamName(teamId) {
     setError("");
+    const drawn = drawTeamName(
+      nameDeck.current,
+      setup.teams.map((team) => team.name),
+    );
+    nameDeck.current = drawn.deck;
     setSetup((current) => ({
       ...current,
-      teams: current.teams.map((team) => {
-        if (team.id !== teamId) return team;
-        const taken = current.teams.map((item) => item.name);
-        return { ...team, name: randomTeamName(taken) };
-      }),
+      teams: current.teams.map((team) =>
+        team.id === teamId ? { ...team, name: drawn.name } : team,
+      ),
     }));
   }
 

@@ -1,5 +1,5 @@
 import { nextColor } from "./palette";
-import { nextIndex, randomId } from "./random";
+import { nextIndex, randomId, shuffle } from "./random";
 import { ROUNDS } from "./rounds";
 import { DICTIONARIES } from "./words";
 
@@ -79,13 +79,32 @@ const TEAM_TEMPLATE = [
   { id: "t2", color: 1, players: ["Барсук", "Вареник"] },
 ];
 
+function takenSet(takenNames) {
+  return new Set(takenNames.map((name) => String(name).trim()).filter(Boolean));
+}
+
 export function randomTeamName(takenNames, random = Math.random) {
-  const taken = new Set(
-    takenNames.map((name) => String(name).trim()).filter(Boolean),
-  );
+  const taken = takenSet(takenNames);
   const free = TEAM_NAMES.filter((name) => !taken.has(name));
   const pool = free.length ? free : [`Команда ${taken.size + 1}`];
   return pool[nextIndex(pool.length, random)];
+}
+
+export function drawTeamName(deck, takenNames, random = Math.random) {
+  const taken = takenSet(takenNames);
+  const pending = Array.isArray(deck) ? deck : shuffle(TEAM_NAMES, random);
+  const rest = [];
+  let name = "";
+  for (const candidate of pending) {
+    if (taken.has(candidate)) continue;
+    if (!name) name = candidate;
+    else rest.push(candidate);
+  }
+  if (name) return { name, deck: rest };
+  const pool = TEAM_NAMES.filter((item) => !taken.has(item));
+  const source = pool.length ? pool : [`Команда ${taken.size + 1}`];
+  const next = shuffle(source, random);
+  return { name: next[0], deck: next.slice(1) };
 }
 
 export function createDefaultTeams(random = Math.random) {

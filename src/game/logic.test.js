@@ -16,7 +16,7 @@ import {
   teamTotal,
   timeUp,
 } from "./engine";
-import { DEFAULT_SETUP, freshTeam, randomTeamName, sanitizeSetup, TEAM_NAMES, validateSetup } from "./setup";
+import { DEFAULT_SETUP, drawTeamName, freshTeam, randomTeamName, sanitizeSetup, TEAM_NAMES, validateSetup } from "./setup";
 import { nextIndex } from "./random";
 import { checkDrafts, mergeWords, pickWords, uniqueWords } from "./words";
 
@@ -242,6 +242,19 @@ describe("шляпа", () => {
     expect(new Set(DEFAULT_SETUP.teams.map((team) => team.name)).size).toBe(2);
     expect(randomTeamName([], () => 0)).toBe(TEAM_NAMES[0]);
     expect(randomTeamName([TEAM_NAMES[0]], () => 0)).toBe(TEAM_NAMES[1]);
+    let deck = [...TEAM_NAMES];
+    const seen = [];
+    for (let step = 0; step < TEAM_NAMES.length; step += 1) {
+      const drawn = drawTeamName(deck, seen.slice(-1));
+      expect(seen).not.toContain(drawn.name);
+      seen.push(drawn.name);
+      deck = drawn.deck;
+    }
+    expect(seen).toEqual(TEAM_NAMES);
+    const skipped = drawTeamName(["Альфа", "Бета", "Гамма"], ["Бета"]);
+    expect(skipped).toEqual({ name: "Альфа", deck: ["Гамма"] });
+    const wrapped = drawTeamName([], [TEAM_NAMES[0]], () => 0.999999);
+    expect(wrapped.name).toBe(TEAM_NAMES[1]);
     const custom = sanitizeSetup({
       teams: [
         { id: "a", name: "Красные", color: 0, players: ["Аня"] },
