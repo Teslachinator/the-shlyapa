@@ -17,7 +17,8 @@ import {
   timeUp,
 } from "./engine";
 import { DEFAULT_SETUP, freshTeam, randomTeamName, sanitizeSetup, TEAM_NAMES, validateSetup } from "./setup";
-import { checkDrafts, mergeWords, uniqueWords } from "./words";
+import { nextIndex } from "./random";
+import { checkDrafts, mergeWords, pickWords, uniqueWords } from "./words";
 
 const identity = () => 0.999999;
 
@@ -156,6 +157,56 @@ describe("шляпа", () => {
     state = passWord(state);
     expect(state.currentWord).toBe("кепка");
     expect(countPieces(state)).toBe(1);
+  });
+
+  test("индекс 0 и почти 1 берут края списка", () => {
+    expect(nextIndex(1, () => 0.2)).toBe(0);
+    expect(nextIndex(7, () => 0)).toBe(0);
+    expect(nextIndex(7, () => 0.999999)).toBe(6);
+    expect(pickWords(["а", "б", "в", "г"], 2, () => 0)).toEqual(["а", "б"]);
+  });
+
+  test("старт партии тасует игроков и берёт слово по индексу", () => {
+    const state = beginTurn(
+      createMatch({
+        teams,
+        words: ["арбуз", "банан", "вишня"],
+        rounds: ["explain"],
+        turnSeconds: 30,
+        random: () => 0,
+      }),
+    );
+    expect(state.teams[0].players).toEqual(["Боря", "Аня"]);
+    expect(state.teams[1].players).toEqual(["Вася"]);
+    expect(state.currentWord).toBe("банан");
+    expect(state.hat).toEqual(["вишня", "арбуз"]);
+  });
+
+  test("отложенное слово не возвращается сразу, если рядом есть другое", () => {
+    let state = beginTurn(party());
+    state = passWord(state);
+    state = passWord(state);
+    state = passWord(state);
+    expect(state.currentWord).not.toBe("арбуз");
+    expect(["вишня", "банан"]).toContain(state.currentWord);
+    expect(countPieces(state)).toBe(3);
+  });
+
+  test("следующий ход и следующий раунд не начинают с последнего слова", () => {
+    let state = beginTurn(party());
+    state = timeUp(state);
+    state = confirmTurn(state);
+    state = beginTurn(state);
+    expect(state.currentWord).not.toBe("вишня");
+    expect(countPieces(state)).toBe(3);
+
+    let round = beginTurn(party(["арбуз", "банан"]));
+    while (round.phase === "play") round = guessWord(round);
+    round = confirmTurn(round);
+    round = continueAfterRound(round);
+    round = beginTurn(round);
+    expect(round.currentWord).not.toBe("арбуз");
+    expect(countPieces(round)).toBe(4);
   });
 
   test("проверка своих слов и настроек", () => {

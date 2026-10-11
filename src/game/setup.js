@@ -1,4 +1,5 @@
 import { nextColor } from "./palette";
+import { nextIndex, randomId } from "./random";
 import { ROUNDS } from "./rounds";
 import { DICTIONARIES } from "./words";
 
@@ -71,8 +72,7 @@ export function randomTeamName(takenNames, random = Math.random) {
   );
   const free = TEAM_NAMES.filter((name) => !taken.has(name));
   const pool = free.length ? free : [`Команда ${taken.size + 1}`];
-  const index = Math.min(pool.length - 1, Math.floor(random() * pool.length));
-  return pool[index];
+  return pool[nextIndex(pool.length, random)];
 }
 
 export function createDefaultTeams(random = Math.random) {
@@ -254,7 +254,7 @@ function refreshLegacyNames(teams) {
 
 export function freshTeam(teams, random = Math.random) {
   return {
-    id: `t-${Math.random().toString(36).slice(2, 9)}`,
+    id: `t-${randomId(random)}`,
     name: randomTeamName(
       teams.map((team) => team.name),
       random,

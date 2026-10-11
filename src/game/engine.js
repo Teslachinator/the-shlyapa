@@ -1,42 +1,46 @@
-export function shuffle(list, random = Math.random) {
-  const items = [...list];
-  for (let index = items.length - 1; index > 0; index -= 1) {
-    const swap = Math.min(index, Math.floor(random() * (index + 1)));
-    [items[index], items[swap]] = [items[swap], items[index]];
-  }
-  return items;
-}
+import { nextIndex, shuffle } from "./random";
 
-function draw(hat, passed, random) {
-  if (hat.length === 0) {
-    if (passed.length === 0) {
-      return { hat, passed, word: null };
-    }
-    const shuffled = shuffle(passed, random);
-    return {
-      hat: shuffled.slice(0, -1),
-      passed: [],
-      word: shuffled[shuffled.length - 1],
-    };
+export { shuffle };
+
+function takeWord(list, random, avoid) {
+  const blocked = avoid != null && list.length > 1 && list.some((word) => word !== avoid);
+  const open = [];
+  for (let index = 0; index < list.length; index += 1) {
+    if (blocked && list[index] === avoid) continue;
+    open.push(index);
   }
+  const index = open[nextIndex(open.length, random)];
   return {
-    hat: hat.slice(0, -1),
-    passed,
-    word: hat[hat.length - 1],
+    rest: list.filter((_, item) => item !== index),
+    word: list[index],
   };
 }
 
+function draw(hat, passed, random, avoid) {
+  if (hat.length === 0) {
+    if (passed.length === 0) return { hat, passed, word: null };
+    const taken = takeWord(shuffle(passed, random), random, avoid);
+    return { hat: taken.rest, passed: [], word: taken.word };
+  }
+  const taken = takeWord(hat, random, avoid);
+  return { hat: taken.rest, passed, word: taken.word };
+}
+
 export function createMatch({ teams, words, rounds, turnSeconds, random = Math.random }) {
+  const seated = teams.map((team) => ({
+    id: team.id,
+    name: team.name.trim(),
+    color: team.color,
+    players: shuffle(
+      team.players.map((player) => player.trim()).filter(Boolean),
+      random,
+    ),
+    explainerCursor: 0,
+    scores: rounds.map(() => []),
+  }));
   const deck = shuffle(words, random);
   return {
-    teams: teams.map((team) => ({
-      id: team.id,
-      name: team.name.trim(),
-      color: team.color,
-      players: team.players.map((player) => player.trim()).filter(Boolean),
-      explainerCursor: 0,
-      scores: rounds.map(() => []),
-    })),
+    teams: seated,
     deck,
     hat: [...deck],
     passed: [],
@@ -52,6 +56,7 @@ export function createMatch({ teams, words, rounds, turnSeconds, random = Math.r
     drawId: 0,
     serial: 0,
     turnsPlayed: 0,
+    lastShown: null,
     rng: random,
   };
 }
@@ -82,13 +87,14 @@ export function noWordsLeft(match) {
 
 export function beginTurn(state) {
   if (state.phase !== "ready") return state;
-  const drawn = draw(state.hat, state.passed, state.rng);
+  const drawn = draw(state.hat, state.passed, state.rng, state.lastShown);
   if (!drawn.word) return state;
   return {
     ...state,
     hat: drawn.hat,
     passed: drawn.passed,
     currentWord: drawn.word,
+    lastShown: drawn.word,
     phase: "play",
     turnGuessed: [],
     seen: [drawn.word],
@@ -101,13 +107,14 @@ export function beginTurn(state) {
 export function guessWord(state) {
   if (state.phase !== "play" || !state.currentWord) return state;
   const turnGuessed = [...state.turnGuessed, state.currentWord];
-  const drawn = draw(state.hat, state.passed, state.rng);
+  const drawn = draw(state.hat, state.passed, state.rng, null);
   if (!drawn.word) {
     return {
       ...state,
       hat: drawn.hat,
       passed: drawn.passed,
       currentWord: null,
+      lastShown: state.currentWord,
       turnGuessed,
       phase: "turnSummary",
       drawId: state.drawId + 1,
@@ -118,6 +125,7 @@ export function guessWord(state) {
     hat: drawn.hat,
     passed: drawn.passed,
     currentWord: drawn.word,
+    lastShown: drawn.word,
     seen: noteSeen(state.seen, drawn.word),
     turnGuessed,
     drawId: state.drawId + 1,
@@ -126,12 +134,13 @@ export function guessWord(state) {
 
 export function passWord(state) {
   if (state.phase !== "play" || !state.currentWord) return state;
-  const drawn = draw(state.hat, [...state.passed, state.currentWord], state.rng);
+  const drawn = draw(state.hat, [...state.passed, state.currentWord], state.rng, state.currentWord);
   return {
     ...state,
     hat: drawn.hat,
     passed: drawn.passed,
     currentWord: drawn.word,
+    lastShown: drawn.word,
     seen: noteSeen(state.seen, drawn.word),
     drawId: state.drawId + 1,
   };

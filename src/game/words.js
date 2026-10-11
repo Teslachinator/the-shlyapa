@@ -1,4 +1,4 @@
-import { shuffle } from "./engine";
+import { sample } from "./random";
 
 export const DICTIONARIES = [
   {
@@ -54,7 +54,7 @@ export function uniqueWords(text) {
 }
 
 export function pickWords(pool, count, random = Math.random) {
-  return shuffle(pool, random).slice(0, Math.min(count, pool.length));
+  return sample(pool, count, random);
 }
 
 export async function loadDictionary(id) {
