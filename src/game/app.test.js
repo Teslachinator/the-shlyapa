@@ -157,7 +157,7 @@ describe("партия на экране", () => {
     expect(screen.queryByText("арбуз")).toBeNull();
   });
 
-  test("по истечении времени слово нельзя засчитать", async () => {
+  test("последнее слово хода можно переключить", async () => {
     jest.useFakeTimers();
     try {
       renderGame();
@@ -181,8 +181,15 @@ describe("партия на экране", () => {
       expect(screen.getByRole("heading", { name: "+1" })).toBeTruthy();
       expect(screen.getByRole("button", { name: skipped }).getAttribute("aria-pressed")).toBe("false");
       expect(screen.getByRole("button", { name: guessed }).getAttribute("aria-pressed")).toBe("true");
-      expect(screen.queryByRole("button", { name: expired })).toBeNull();
-      expect(screen.getByText(expired)).toBeTruthy();
+      const last = screen.getByRole("button", { name: new RegExp(`^${expired}`) });
+      expect(last.getAttribute("aria-pressed")).toBe("false");
+      expect(last.textContent).toContain("Последнее слово");
+      fireEvent.click(last);
+      expect(last.getAttribute("aria-pressed")).toBe("true");
+      expect(screen.getByRole("heading", { name: "+2" })).toBeTruthy();
+      fireEvent.click(last);
+      expect(last.getAttribute("aria-pressed")).toBe("false");
+      expect(screen.getByRole("heading", { name: "+1" })).toBeTruthy();
       expect(document.querySelectorAll(".word-row")).toHaveLength(3);
     } finally {
       jest.useRealTimers();

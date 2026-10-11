@@ -60,7 +60,12 @@ describe("шляпа", () => {
     expect(state.expired).toBe("арбуз");
     expect(state.seen).toEqual(["вишня", "банан", "арбуз"]);
     expect(state.hat).toContain("арбуз");
-    expect(awardTurnWord(state, "арбуз")).toBe(state);
+    state = awardTurnWord(state, "арбуз");
+    expect(state.turnGuessed).toEqual(["банан", "арбуз"]);
+    expect(state.hat).toEqual([]);
+    state = revokeTurnWord(state, "арбуз");
+    expect(state.turnGuessed).toEqual(["банан"]);
+    expect(state.hat).toEqual(["арбуз"]);
     expect(countPieces(state)).toBe(3);
 
     state = confirmTurn(state);
@@ -99,7 +104,7 @@ describe("шляпа", () => {
     expect(countPieces(state)).toBe(1);
   });
 
-  test("после сигнала слово с экрана нельзя засчитать, пропущенное можно", () => {
+  test("последнее слово хода можно засчитать и вернуть", () => {
     let state = beginTurn(party(["арбуз", "банан", "вишня"]));
     state = passWord(state);
     state = guessWord(state);
@@ -108,11 +113,15 @@ describe("шляпа", () => {
     expect(state.phase).toBe("turnSummary");
     expect(state.seen).toEqual(["вишня", "банан", "арбуз"]);
     expect(state.hat).toEqual(["арбуз"]);
-    expect(awardTurnWord(state, "арбуз")).toBe(state);
+    expect(state.expired).toBe("арбуз");
+    state = awardTurnWord(state, "арбуз");
+    expect(state.turnGuessed).toEqual(["банан", "арбуз"]);
+    expect(state.hat).toEqual([]);
+    state = revokeTurnWord(state, "арбуз");
+    expect(state.turnGuessed).toEqual(["банан"]);
+    expect(state.hat).toEqual(["арбуз"]);
     state = awardTurnWord(state, passed);
     expect(state.turnGuessed).toEqual(["банан", passed]);
-    expect(state.expired).toBe("арбуз");
-    expect(state.hat).toEqual(["арбуз"]);
     expect(countPieces(state)).toBe(3);
   });
 

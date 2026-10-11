@@ -386,7 +386,7 @@ export function useHatGame() {
 
   function award(word) {
     const current = matchRef.current;
-    if (!current || current.turnGuessed.includes(word) || current.expired === word) return;
+    if (!current || current.turnGuessed.includes(word)) return;
     if (!current.seen?.includes(word)) return;
     if (!current.hat.includes(word) && !current.passed.includes(word)) return;
     signal(true);

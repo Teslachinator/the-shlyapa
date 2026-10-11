@@ -1,14 +1,4 @@
-export function WordFlip({ word, scored, locked, hint, hintStyle, onScore, onHat }) {
-  if (locked) {
-    return (
-      <div className="word-row">
-        <span>{word}</span>
-        <span className="flip" aria-hidden="true">
-          <span className="on hat">В шляпу</span>
-        </span>
-      </div>
-    );
-  }
+export function WordFlip({ word, scored, hint, hintStyle, onScore, onHat }) {
   return (
     <button type="button" className="word-row" aria-pressed={scored} onClick={scored ? onHat : onScore}>
       <span>

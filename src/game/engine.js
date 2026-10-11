@@ -170,7 +170,7 @@ export function revokeTurnWord(state, word) {
 
 export function awardTurnWord(state, word) {
   if (state.phase !== "turnSummary" || state.turnGuessed.includes(word)) return state;
-  if (word === state.expired || !state.seen.includes(word)) return state;
+  if (!state.seen.includes(word)) return state;
   const inHat = state.hat.includes(word);
   const inPassed = state.passed.includes(word);
   if (!inHat && !inPassed) return state;

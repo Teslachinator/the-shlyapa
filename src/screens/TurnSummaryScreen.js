@@ -45,7 +45,7 @@ export function TurnSummaryScreen({ game }) {
               key={word}
               word={word}
               scored={scored}
-              locked={word === match.expired}
+              hint={word === match.expired ? "Последнее слово" : ""}
               onScore={() => game.award(word)}
               onHat={() => game.revoke(word)}
             />
