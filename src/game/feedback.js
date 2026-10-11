@@ -43,6 +43,11 @@ export function playTick() {
   tone(880, 0.07, { type: "square", gain: 0.2 });
 }
 
+export function playCountdown(step) {
+  const go = step <= 0;
+  tone(go ? 988 : 523, go ? 0.16 : 0.12, { type: "square", gain: go ? 0.7 : 0.62 });
+}
+
 export function playPop() {
   tone(620, 0.1, { gain: 0.92 });
 }

@@ -14,6 +14,7 @@ import {
   timeUp,
 } from "./engine";
 import {
+  playCountdown,
   playFanfare,
   playHorn,
   playPass,
@@ -57,6 +58,7 @@ export function useHatGame() {
   const [busy, setBusy] = useState(false);
   const [askAbort, setAskAbort] = useState(false);
   const [millisLeft, setMillisLeft] = useState(0);
+  const [prep, setPrep] = useState(0);
 
   const rulesFrom = useRef("home");
   const matchRef = useRef(null);
@@ -67,6 +69,7 @@ export function useHatGame() {
   const busyRef = useRef(false);
   const entryLock = useRef(false);
   const pausedAt = useRef(0);
+  const prepTimer = useRef(0);
 
   matchRef.current = match;
   soundRef.current = setup.sound;
@@ -333,15 +336,49 @@ export function useHatGame() {
     setEntry({ ...entry, words, index: nextIndex, stage: "cover" });
   }
 
-  function begin() {
+  function cancelPrep() {
+    if (prepTimer.current) {
+      window.clearTimeout(prepTimer.current);
+      prepTimer.current = 0;
+    }
+    setPrep(0);
+  }
+
+  function startTurn() {
     const current = matchRef.current;
+    prepTimer.current = 0;
+    setPrep(0);
     if (!current || current.phase !== "ready") return;
-    unlockAudio();
     pausedAt.current = 0;
     deadlineRef.current = Date.now() + current.turnSeconds * 1000;
     setMillisLeft(current.turnSeconds * 1000);
     guard.current = null;
+    if (soundRef.current) playCountdown(0);
     setMatch(openTurn(current));
+  }
+
+  function begin() {
+    const current = matchRef.current;
+    if (!current || current.phase !== "ready" || prepTimer.current) return;
+    unlockAudio();
+    let left = 3;
+    setPrep(3);
+    if (soundRef.current) playCountdown(3);
+    pulse(18);
+    const tick = () => {
+      prepTimer.current = window.setTimeout(() => {
+        left -= 1;
+        if (left <= 0) {
+          startTurn();
+          return;
+        }
+        setPrep(left);
+        if (soundRef.current) playCountdown(left);
+        pulse(18);
+        tick();
+      }, 1000);
+    };
+    tick();
   }
 
   function actOnWord(kind) {
@@ -424,6 +461,7 @@ export function useHatGame() {
   }
 
   function requestAbort() {
+    cancelPrep();
     if (matchRef.current?.phase === "play" && !pausedAt.current) {
       pausedAt.current = Date.now();
     }
@@ -439,6 +477,7 @@ export function useHatGame() {
   }
 
   function abort() {
+    cancelPrep();
     pausedAt.current = 0;
     deadlineRef.current = 0;
     setAskAbort(false);
@@ -460,6 +499,7 @@ export function useHatGame() {
     busy,
     askAbort,
     millisLeft,
+    prep,
     goHome,
     goSetup,
     openRules,

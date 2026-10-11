@@ -34,6 +34,13 @@ function wordOnSlip() {
   return document.querySelector(".slip-word")?.textContent ?? "";
 }
 
+function revealWord() {
+  fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
+  act(() => {
+    jest.advanceTimersByTime(3000);
+  });
+}
+
 describe("партия на экране", () => {
   beforeEach(() => {
     window.matchMedia = jest.fn().mockImplementation((query) => ({
@@ -49,6 +56,8 @@ describe("партия на экране", () => {
   });
 
   test("словарь, пас, три раунда и итог", async () => {
+    jest.useFakeTimers();
+    try {
     renderGame();
     expect(screen.getByRole("heading", { name: "The Shlyapa" })).toBeTruthy();
 
@@ -71,6 +80,15 @@ describe("партия на экране", () => {
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
+    expect(screen.getByRole("status").textContent).toBe("3");
+    expect(document.querySelector(".slip-word")).toBeNull();
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(screen.getByRole("status").textContent).toBe("2");
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
     const first = wordOnSlip();
     fireEvent.click(screen.getByRole("button", { name: "Скип" }));
     expect(wordOnSlip()).not.toBe(first);
@@ -91,7 +109,7 @@ describe("партия на экране", () => {
         if (screen.queryByRole("button", { name: "Ещё партию" })) return;
         const show = screen.queryByRole("button", { name: "Показать слово" });
         if (show) {
-          fireEvent.click(show);
+          revealWord();
           continue;
         }
         const guess = screen.queryByRole("button", { name: "Угадали" });
@@ -112,7 +130,7 @@ describe("партия на экране", () => {
     };
 
     fireEvent.click(screen.getByRole("button", { name: /Дальше:/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
+    revealWord();
     fireEvent.click(screen.getByRole("button", { name: "Угадали" }));
     fireEvent.click(screen.getByRole("button", { name: "Завершить раунд" }));
     expect(
@@ -123,7 +141,7 @@ describe("партия на экране", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Дальше: Пантомима" }));
     expect(screen.getByRole("heading", { name: "Пантомима" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
+    revealWord();
     expect(screen.getByText("Без слов, звуков и букв")).toBeTruthy();
 
     finish(
@@ -131,7 +149,7 @@ describe("партия на экране", () => {
         screen.queryByRole("heading", { name: "Объяснение одним словом" }) &&
         screen.queryByRole("button", { name: "Показать слово" }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
+    revealWord();
     expect(screen.getByText("Только одно слово, без пояснений")).toBeTruthy();
     finish();
 
@@ -143,6 +161,9 @@ describe("партия на экране", () => {
       Number(row.lastElementChild.textContent),
     );
     expect(totals.reduce((sum, value) => sum + value, 0)).toBe(24);
+  } finally {
+    jest.useRealTimers();
+  }
   });
 
   test("свои слова не показываются следующему и ловят повтор", async () => {
@@ -196,7 +217,7 @@ describe("партия на экране", () => {
         await Promise.resolve();
         await Promise.resolve();
       });
-      fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
+      revealWord();
       const skipped = wordOnSlip();
       fireEvent.click(screen.getByRole("button", { name: "Скип" }));
       const guessed = wordOnSlip();

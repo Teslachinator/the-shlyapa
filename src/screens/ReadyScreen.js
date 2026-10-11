@@ -17,8 +17,8 @@ export function ReadyScreen({ game }) {
   const round = roundById(match.rounds[match.roundIndex]);
   const { team, explainer } = getTurn(match);
   const inHat = match.hat.length + match.passed.length;
-  const hatTotal = match.deck.length;
   const opening = match.turnsPlayed === 0 && match.roundIndex === 0;
+  const preparing = game.prep > 0;
 
   return (
     <Stage
@@ -30,36 +30,54 @@ export function ReadyScreen({ game }) {
         </button>
       }
       footer={
-        <button type="button" className="btn btn-hat" onClick={game.begin}>
-          Показать слово
-        </button>
+        preparing ? null : (
+          <button type="button" className="btn btn-hat" onClick={game.begin}>
+            Показать слово
+          </button>
+        )
       }
     >
-      <div className="between-round">
-        <RoundPips total={match.rounds.length} index={match.roundIndex} />
-        <p className="kicker">
-          {match.rounds.length > 1
-            ? `Раунд ${match.roundIndex + 1} из ${match.rounds.length}`
-            : "Раунд"}
-        </p>
-        <h2>{round.lead}</h2>
-      </div>
-      <p className="kicker">Команда</p>
-      <h1 className="between-team">{team.name}</h1>
-      <p className="kicker">Игрок</p>
-      <p className="between-player">{explainer}</p>
-      <p className="between-hat">{`В шляпе осталось ${inHat} ${wordCount(inHat)}.`}</p>
-      <Scoreboard teams={match.teams} activeId={team.id} />
-      <div className="between-notes">
-        <div className="rule-hint">
-          <p>{round.rules}</p>
+      {preparing ? (
+        <div className="prep">
+          <p className="kicker">Приготовьтесь</p>
+          <p className="prep-count" role="status">
+            {game.prep}
+          </p>
+          <p className="prep-who">{explainer}</p>
+          <p className="lede">
+            Не подглядывайте. Слово появится после отсчёта.
+          </p>
         </div>
-        <p className="lede">
-          {opening
-            ? "Экран видит только тот, кто объясняет. Слова одни и те же во всех раундах."
-            : "Передайте телефон объясняющему и не подглядывайте."}
-        </p>
-      </div>
+      ) : null}
+      {preparing ? null : (
+        <>
+          <div className="between-round">
+            <RoundPips total={match.rounds.length} index={match.roundIndex} />
+            <p className="kicker">
+              {match.rounds.length > 1
+                ? `Раунд ${match.roundIndex + 1} из ${match.rounds.length}`
+                : "Раунд"}
+            </p>
+            <h2>{round.lead}</h2>
+          </div>
+          <p className="kicker">Команда</p>
+          <h1 className="between-team">{team.name}</h1>
+          <p className="kicker">Игрок</p>
+          <p className="between-player">{explainer}</p>
+          <p className="between-hat">{`В шляпе осталось ${inHat} ${wordCount(inHat)}.`}</p>
+          <Scoreboard teams={match.teams} activeId={team.id} />
+          <div className="between-notes">
+            <div className="rule-hint">
+              <p>{round.rules}</p>
+            </div>
+            <p className="lede">
+              {opening
+                ? "Экран видит только тот, кто объясняет. Слова одни и те же во всех раундах."
+                : "Передайте телефон объясняющему и не подглядывайте."}
+            </p>
+          </div>
+        </>
+      )}
     </Stage>
   );
 }
