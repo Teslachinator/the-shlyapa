@@ -67,12 +67,12 @@ export function PlayScreen({ game }) {
       </div>
       <div className="play-actions">
         <button type="button" className="btn btn-ghost" onClick={game.pass}>
-          В шляпу
+          Скип
         </button>
         <button type="button" className="btn btn-yes" onClick={game.guess}>
           Угадали
         </button>
-        <p className="keyhint">Пробел — угадали, P — в шляпу</p>
+        <p className="keyhint">Пробел — угадали, P — скип</p>
       </div>
     </section>
   );

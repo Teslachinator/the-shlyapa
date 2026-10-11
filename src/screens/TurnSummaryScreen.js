@@ -21,15 +21,15 @@ export function TurnSummaryScreen({ game }) {
   return (
     <Stage
       style={teamStyle(team.color)}
+      corner={
+        <button type="button" className="text-btn" onClick={game.requestAbort}>
+          Закончить партию
+        </button>
+      }
       footer={
-        <>
-          <button type="button" className="btn btn-hat" onClick={game.confirmTurn}>
-            {label}
-          </button>
-          <button type="button" className="btn btn-ghost" onClick={game.requestAbort}>
-            Закончить партию
-          </button>
-        </>
+        <button type="button" className="btn btn-hat btn-next" onClick={game.confirmTurn}>
+          {label}
+        </button>
       }
     >
       <p className="kicker">{round.title}</p>

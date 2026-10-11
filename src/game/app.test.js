@@ -2,14 +2,23 @@ import { fireEvent, render, screen, act } from "@testing-library/react";
 import { StrictMode } from "react";
 import App from "../App";
 
-const EIGHT = ["арбуз", "банан", "вишня", "груша", "дыня", "ежевика", "инжир", "киви"];
+const EIGHT = [
+  "арбуз",
+  "банан",
+  "вишня",
+  "груша",
+  "дыня",
+  "ежевика",
+  "инжир",
+  "киви",
+];
 
 function renderGame() {
   localStorage.clear();
   return render(
     <StrictMode>
       <App />
-    </StrictMode>
+    </StrictMode>,
   );
 }
 
@@ -56,12 +65,14 @@ describe("партия на экране", () => {
     fireEvent.click(screen.getByRole("button", { name: "20" }));
 
     await startDictionary();
-    expect(screen.getByText(/В шляпе 8/)).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Объяснение словами" })).toBeTruthy();
+    expect(screen.getByText("В шляпе осталось 8 слов.")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Объяснение словами" }),
+    ).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
     const first = wordOnSlip();
-    fireEvent.click(screen.getByRole("button", { name: "В шляпу" }));
+    fireEvent.click(screen.getByRole("button", { name: "Скип" }));
     expect(wordOnSlip()).not.toBe(first);
     expect(screen.getByText(/этот ход \+0/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Угадали" }));
@@ -88,7 +99,9 @@ describe("партия на экране", () => {
           fireEvent.click(guess);
           continue;
         }
-        const next = screen.queryByRole("button", { name: /Дальше:|Завершить раунд|К итогам/ });
+        const next = screen.queryByRole("button", {
+          name: /Дальше:|Завершить раунд|К итогам/,
+        });
         if (next) {
           fireEvent.click(next);
           continue;
@@ -102,7 +115,9 @@ describe("партия на экране", () => {
     fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
     fireEvent.click(screen.getByRole("button", { name: "Угадали" }));
     fireEvent.click(screen.getByRole("button", { name: "Завершить раунд" }));
-    expect(screen.getByRole("heading", { name: "Объяснение словами" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Объяснение словами" }),
+    ).toBeTruthy();
     expect(screen.getByText(/\+7/)).toBeTruthy();
     expect(screen.getByText(/\+1/)).toBeTruthy();
 
@@ -111,14 +126,21 @@ describe("партия на экране", () => {
     fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
     expect(screen.getByText("Без слов, звуков и букв")).toBeTruthy();
 
-    finish(() => screen.queryByRole("heading", { level: 1, name: "Объяснение одним словом" }));
+    finish(
+      () =>
+        screen.queryByRole("heading", { name: "Объяснение одним словом" }) &&
+        screen.queryByRole("button", { name: "Показать слово" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
     expect(screen.getByText("Только одно слово, без пояснений")).toBeTruthy();
     finish();
 
     expect(screen.getByRole("button", { name: "Ещё партию" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Все слова" })).toBeTruthy();
+    expect(screen.getByText("арбуз")).toBeTruthy();
+    expect(screen.getByText("киви")).toBeTruthy();
     const totals = [...document.querySelectorAll("tbody tr")].map((row) =>
-      Number(row.lastElementChild.textContent)
+      Number(row.lastElementChild.textContent),
     );
     expect(totals.reduce((sum, value) => sum + value, 0)).toBe(24);
   });
@@ -127,12 +149,18 @@ describe("партия на экране", () => {
     renderGame();
     fireEvent.click(screen.getByRole("button", { name: "Играть" }));
     fireEvent.click(screen.getByRole("button", { name: "Свои слова" }));
-    fireEvent.click(screen.getByRole("button", { name: "Убрать игрока Пончик" }));
-    fireEvent.click(screen.getByRole("button", { name: "Убрать игрока Вареник" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Убрать игрока Пончик" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Убрать игрока Вареник" }),
+    );
     fireEvent.change(screen.getByRole("slider"), { target: { value: "4" } });
     fireEvent.click(screen.getByRole("button", { name: "Писать слова" }));
 
-    expect(screen.getByRole("heading", { name: "Передайте телефон" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Передайте телефон" }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Писать слова" }));
     let fields = screen.getAllByRole("textbox");
     ["арбуз", "арбуз", "вишня", "груша"].forEach((word, index) => {
@@ -153,7 +181,7 @@ describe("партия на экране", () => {
       fireEvent.change(fields[index], { target: { value: word } });
     });
     fireEvent.click(screen.getByRole("button", { name: "Положить в шляпу" }));
-    expect(screen.getByText(/В шляпе 8/)).toBeTruthy();
+    expect(screen.getByText("В шляпе осталось 8 слов.")).toBeTruthy();
     expect(screen.queryByText("арбуз")).toBeNull();
   });
 
@@ -170,7 +198,7 @@ describe("партия на экране", () => {
       });
       fireEvent.click(screen.getByRole("button", { name: "Показать слово" }));
       const skipped = wordOnSlip();
-      fireEvent.click(screen.getByRole("button", { name: "В шляпу" }));
+      fireEvent.click(screen.getByRole("button", { name: "Скип" }));
       const guessed = wordOnSlip();
       fireEvent.click(screen.getByRole("button", { name: "Угадали" }));
       const expired = wordOnSlip();
@@ -179,9 +207,19 @@ describe("партия на экране", () => {
       });
       expect(screen.queryByRole("button", { name: "Да, угадали" })).toBeNull();
       expect(screen.getByRole("heading", { name: "+1" })).toBeTruthy();
-      expect(screen.getByRole("button", { name: skipped }).getAttribute("aria-pressed")).toBe("false");
-      expect(screen.getByRole("button", { name: guessed }).getAttribute("aria-pressed")).toBe("true");
-      const last = screen.getByRole("button", { name: new RegExp(`^${expired}`) });
+      expect(
+        screen
+          .getByRole("button", { name: skipped })
+          .getAttribute("aria-pressed"),
+      ).toBe("false");
+      expect(
+        screen
+          .getByRole("button", { name: guessed })
+          .getAttribute("aria-pressed"),
+      ).toBe("true");
+      const last = screen.getByRole("button", {
+        name: new RegExp(`^${expired}`),
+      });
       expect(last.getAttribute("aria-pressed")).toBe("false");
       expect(last.textContent).toContain("Последнее слово");
       fireEvent.click(last);

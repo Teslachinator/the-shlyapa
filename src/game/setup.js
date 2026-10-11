@@ -2,7 +2,7 @@ import { nextColor } from "./palette";
 import { ROUNDS } from "./rounds";
 import { DICTIONARIES } from "./words";
 
-export const TURN_OPTIONS = [20, 30, 45, 60];
+export const TURN_OPTIONS = [20, 30, 45, 60, 90];
 export const WORD_MIN = 20;
 export const WORD_MAX = 80;
 export const WORD_STEP = 5;
@@ -66,7 +66,9 @@ const TEAM_TEMPLATE = [
 ];
 
 export function randomTeamName(takenNames, random = Math.random) {
-  const taken = new Set(takenNames.map((name) => String(name).trim()).filter(Boolean));
+  const taken = new Set(
+    takenNames.map((name) => String(name).trim()).filter(Boolean),
+  );
   const free = TEAM_NAMES.filter((name) => !taken.has(name));
   const pool = free.length ? free : [`Команда ${taken.size + 1}`];
   const index = Math.min(pool.length - 1, Math.floor(random() * pool.length));
@@ -197,15 +199,22 @@ export function createEntry(setup) {
 }
 
 function sameNames(names, previous) {
-  return names.length === previous.length && names.every((name, index) => name === previous[index]);
+  return (
+    names.length === previous.length &&
+    names.every((name, index) => name === previous[index])
+  );
 }
 
 function pickFreshNames(count, random) {
   let chosen = [];
   for (let attempt = 0; attempt < 6; attempt += 1) {
     chosen = [];
-    for (let index = 0; index < count; index += 1) chosen.push(randomTeamName(chosen, random));
-    if (PREVIOUS_TEAM_DEFAULTS.every((previous) => !sameNames(chosen, previous))) return chosen;
+    for (let index = 0; index < count; index += 1)
+      chosen.push(randomTeamName(chosen, random));
+    if (
+      PREVIOUS_TEAM_DEFAULTS.every((previous) => !sameNames(chosen, previous))
+    )
+      return chosen;
   }
   return chosen;
 }
@@ -223,7 +232,8 @@ export function nextNicknames(teams, count) {
 
 function refreshLegacyTeamNames(teams, random) {
   const names = teams.map((team) => team.name);
-  if (!PREVIOUS_TEAM_DEFAULTS.some((previous) => sameNames(names, previous))) return teams;
+  if (!PREVIOUS_TEAM_DEFAULTS.some((previous) => sameNames(names, previous)))
+    return teams;
   const chosen = pickFreshNames(teams.length, random);
   return teams.map((team, index) => ({ ...team, name: chosen[index] }));
 }
@@ -247,7 +257,7 @@ export function freshTeam(teams, random = Math.random) {
     id: `t-${Math.random().toString(36).slice(2, 9)}`,
     name: randomTeamName(
       teams.map((team) => team.name),
-      random
+      random,
     ),
     color: nextColor(teams),
     players: nextNicknames(teams, 2),

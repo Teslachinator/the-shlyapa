@@ -13,33 +13,33 @@ export function RoundSummaryScreen({ game }) {
 
   return (
     <Stage
+      corner={
+        <button type="button" className="text-btn" onClick={game.requestAbort}>
+          Закончить партию
+        </button>
+      }
       footer={
-        <>
-          {last ? (
-            <button type="button" className="btn btn-hat" onClick={game.showFinal}>
-              К итогам
-            </button>
-          ) : (
-            <button type="button" className="btn btn-hat" onClick={game.nextRound}>
-              Дальше: {upcoming.title}
-            </button>
-          )}
-          <button type="button" className="btn btn-ghost" onClick={game.requestAbort}>
-            Закончить партию
+        last ? (
+          <button
+            type="button"
+            className="btn btn-hat btn-next"
+            onClick={game.showFinal}
+          >
+            К итогам
           </button>
-        </>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-hat btn-next"
+            onClick={game.nextRound}
+          >
+            Дальше: {upcoming.title}
+          </button>
+        )
       }
     >
       <p className="kicker">раунд сыгран</p>
       <h1>{round.lead}</h1>
-      <div className="round-tallies">
-        {match.teams.map((team) => (
-          <div key={team.id} className="round-tally" style={teamStyle(team.color)}>
-            <span>{team.name}</span>
-            <b>+{team.scores[match.roundIndex]?.length ?? 0}</b>
-          </div>
-        ))}
-      </div>
       {nextTurn ? (
         <div className="card next-card" style={teamStyle(nextTurn.team.color)}>
           <p className="kicker dark">Дальше</p>
@@ -52,6 +52,18 @@ export function RoundSummaryScreen({ game }) {
           </div>
         </div>
       ) : null}
+      <div className="round-tallies">
+        {match.teams.map((team) => (
+          <div
+            key={team.id}
+            className="round-tally"
+            style={teamStyle(team.color)}
+          >
+            <span>{team.name}</span>
+            <b>+{team.scores[match.roundIndex]?.length ?? 0}</b>
+          </div>
+        ))}
+      </div>
       <Scoreboard teams={match.teams} />
     </Stage>
   );

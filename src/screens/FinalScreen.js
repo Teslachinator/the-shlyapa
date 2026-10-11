@@ -3,16 +3,20 @@ import { teamTotal } from "../game/engine";
 import { teamStyle } from "../game/palette";
 import { roundById } from "../game/rounds";
 
+function byRussian(left, right) {
+  return left.localeCompare(right, "ru");
+}
+
 export function FinalScreen({ game }) {
   const { match } = game;
   const ranked = [...match.teams].sort((a, b) => teamTotal(b) - teamTotal(a));
   const best = teamTotal(ranked[0]);
   const winners = ranked.filter((team) => teamTotal(team) === best);
   const tied = winners.length > 1;
+  const words = [...(match.deck || [])].sort(byRussian);
 
   return (
     <Stage
-      className="finale"
       footer={
         <>
           {game.error ? (
@@ -32,19 +36,6 @@ export function FinalScreen({ game }) {
         </>
       }
     >
-      <div className="scraps" aria-hidden="true">
-        {Array.from({ length: 12 }, (_, index) => (
-          <i
-            key={index}
-            style={{
-              left: `${(index * 8.5) % 100}%`,
-              animationDelay: `${(index % 6) * 0.28}s`,
-              background: index % 2 ? "#e2b15a" : "#f3ead7",
-              width: index % 3 === 0 ? 12 : 8,
-            }}
-          />
-        ))}
-      </div>
       <p className="kicker">{tied ? "ничья" : "победитель"}</p>
       <h1>{tied ? "Поровну" : winners[0].name}</h1>
       <p className="lede left">
@@ -77,6 +68,14 @@ export function FinalScreen({ game }) {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="finale-words">
+        <h2>Все слова</h2>
+        <ul>
+          {words.map((word, index) => (
+            <li key={`${word}-${index}`}>{word}</li>
+          ))}
+        </ul>
       </div>
     </Stage>
   );
